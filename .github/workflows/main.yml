@@ -71,6 +71,7 @@ jobs:
 
       - name: Build Poetry
         run: |
+          poetry install
           poetry build
 
       - name: Upload to PyPI
