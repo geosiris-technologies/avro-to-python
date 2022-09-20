@@ -35,5 +35,8 @@ authors = [
 ]
 readme = "README.rst"
 license = "MIT"
+packages = [
+    { include = "dist/", format = "sdist" }
+]
 
 [tool.setuptools_scm]
