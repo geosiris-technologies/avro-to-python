@@ -2,13 +2,13 @@
 name = "avro-to-python"
 version = "1.0.0"
 authors = [
-  { name="Scott Rothbarth", email="" },
-  { name="Lionel Untereiner", email="lionel.untereiner@geosiris.com" },
-  { name="Valentin Gauthier", email="valentin.gauthier@geosiris.com" },
+  "Scott Rothbarth <>",
+  "Lionel Untereiner <lionel.untereiner@geosiris.com>",
+  "Valentin Gauthier <valentin.gauthier@geosiris.com>"
 ]
 description = "avro-to-python is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy."
 readme = "README.rst"
-license = { file="LICENSE" }
+license = "MIT"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -34,7 +34,7 @@ authors = [
   "Valentin Gauthier <valentin.gauthier@geosiris.com>"
 ]
 readme = "README.rst"
-license = { file="LICENSE" }
+license = "MIT"
 requires-python = ">=3.8"
 
 [tool.setuptools_scm]
