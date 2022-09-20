@@ -37,7 +37,6 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: [build]
     
     runs-on: ${{ matrix.os }}
     strategy:
