@@ -80,4 +80,4 @@ jobs:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI}}
         run: |
           poetry config repositories.test https://test.pypi.org/legacy/
-          poetry publish # --repository test
+          poetry publish --repository test
