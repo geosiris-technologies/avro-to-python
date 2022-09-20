@@ -57,11 +57,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-artifact
-          path: dist/
+      # - name: Get build artifacts
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-artifact
+      #     path: dist/
 
       - name: Install Poetry
         run: |
