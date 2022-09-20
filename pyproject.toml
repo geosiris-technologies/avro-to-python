@@ -19,3 +19,18 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/geosiris-technologies/avro-to-python"
 "Bug Tracker" = "https://github.com/geosiris-technologies/avro-to-python/issues"
+
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry]
+name = "avro-to-python"
+version = "1.0.0"
+authors = [
+  { name="Scott Rothbarth", email="" },
+  { name="Lionel Untereiner", email="lionel.untereiner@geosiris.com" },
+  { name="Valentin Gauthier", email="valentin.gauthier@geosiris.com" },
+]
+
+[tool.setuptools_scm]
