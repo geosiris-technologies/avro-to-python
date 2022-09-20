@@ -1,0 +1,21 @@
+[project]
+name = "avro-to-python"
+version = "1.0.0"
+authors = [
+  { name="Scott Rothbarth", email="" },
+  { name="Lionel Untereiner", email="lionel.untereiner@geosiris.com" },
+  { name="Valentin Gauthier", email="valentin.gauthier@geosiris.com" },
+]
+description = "avro-to-python is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy."
+readme = "README.rst"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/geosiris-technologies/avro-to-python"
+"Bug Tracker" = "https://github.com/geosiris-technologies/avro-to-python/issues"
