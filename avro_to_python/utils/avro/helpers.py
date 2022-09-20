@@ -7,7 +7,7 @@ from avro_to_python.classes.field import Field
 
 from avro_to_python.utils.exceptions import BadReferenceError
 from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPE_MAP
-
+import re
 
 def _create_reference(file: dict) -> dict:
     """ creates a reference object for file references
