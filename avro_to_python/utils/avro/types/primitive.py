@@ -4,7 +4,7 @@ from typing import Union
 
 from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPES
 
-from avro_to_python.classes.field import Field
+from avro_to_python.classes.field import PrimitiveField
 
 kwargs = {
     'name': None,
@@ -53,4 +53,4 @@ def _primitive_type(field: Union[dict, str]) -> dict:
         raise ValueError(
             f'{type(field)} is not in (dict, str)'
         )
-    return Field(**kwargs)
+    return PrimitiveField(**kwargs)

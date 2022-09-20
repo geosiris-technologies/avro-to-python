@@ -1,7 +1,8 @@
 {%- macro get_json_schema(schema) -%}
-{{'schema = """\n' + json.dumps(schema, indent=4) + '\n"""'}}
+avro_schema: typing.Final[str] = '{{ json.dumps(schema) }}'
+{# {{'schema: typing.ClassVar[str] = """\n' + json.dumps(schema)|compress + '\n"""'}} #}
 {%- endmacro -%}
 
 {%- block schema -%}
-{{get_json_schema(file.schema)|indent(4)}}
-{% endblock -%}
+{{get_json_schema(file.expanded_schema)}}
+{%- endblock -%}

@@ -1,18 +1,13 @@
-{%- block enum -%}
-class {{file.name}}(Enum, metaclass=DefaultEnumMeta):
-
-    {% include 'partials/avroSchema.j2'|indent(-4) -%}
-
+{%- block enum %}
+class {{file.name}}(StrEnum):    
 {%- if file.default %}
     # the first value ({{file.default}}) is the default
     {{file.default}} = '{{file.default}}'
-{% endif %}
+{% endif -%}
 {%- for symbol in  file.symbols -%}
 {%- if symbol != file.default %}
-    {{symbol}} = '{{symbol}}'
+    {{symbol|snake_case|upper}} = '{{symbol}}'
 {%- endif -%}
 {% endfor %}
 
-    def encode(self):
-        return self.name
 {% endblock -%}

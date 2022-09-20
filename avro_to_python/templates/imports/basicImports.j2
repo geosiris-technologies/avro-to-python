@@ -1,11 +1,10 @@
 {%- block basicimports %}
-import json
-{%- if file.avrotype == 'record' %}
-from {{pip_import}}helpers import default_json_serialize, todict
-from typing import Union
-{%- endif -%}
+import typing
 {%- if file.avrotype == 'enum' %}
-from enum import Enum
-from {{pip_import}}helpers import default_json_serialize, DefaultEnumMeta, todict
+from {{pip_import}} import StrEnum
+{# {%- elif file.avrotype == 'fixed' %} #}
+{# from {{pip_import}}.helpers import Fixed #}
+{%- elif file.avrotype == 'record' %}
+from {{pip_import}} import ETPModel, Field, Strict
 {%- endif -%}
 {% endblock %}

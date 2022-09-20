@@ -115,3 +115,7 @@ ENV/
 
 # macOS stuff
 *.DS_Store
+
+#VSCode
+.vscode/
+*.code-workspace

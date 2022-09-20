@@ -10,8 +10,4 @@ Development Lead
 Contributors
 ------------
 
-* Chas DeVeas <https://github.com/chasdevs>
-* Ivan isenilov <https://github.com/isenilov>
-* Ethan Schwab <https://github.com/ethan-schwab>
-* Alejandro Jaramillo <https://github.com/irux>
-* Jon Leung <https://github.com/jkleung11>
+None yet. Why not be the first?

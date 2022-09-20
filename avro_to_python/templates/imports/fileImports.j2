@@ -1,7 +1,7 @@
 {% block fileimports %}
 {%- if file.imports %}
-{%- for imp in file.imports -%}
-from {{pip_import}}{{imp.namespace}}.{{imp.name}} import {{imp.name}}
-{% endfor -%}
+{% for imp in file.imports %}    
+from {{pip_import}}.{{imp.namespace|lower_and_snake}}.{{imp.name|snake_case}} import {{imp.name}} 
+{% endfor %}
 {%- endif -%}
 {% endblock %}

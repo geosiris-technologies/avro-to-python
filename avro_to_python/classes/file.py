@@ -1,27 +1,24 @@
 """ base file class for avro file structure """
 
-from typing import List, Union
+from typing import List, Union, Mapping
+from dataclasses import dataclass, field
 
+from avro_to_python.classes.field import Field
+from avro_to_python.classes.reference import Reference
 
+@dataclass
 class File(object):
 
-    name = None
-    avrotype = None
-    namespace = None
-    schema = None
-    imports = []
-    fields = {}
-    enum_sumbols = []
-
-    def __init__(self, name: str, avrotype: str, namespace: str,
-                 schema: dict, imports: List[object]=[],
-                 fields: List[object]={}, enum_sumbols: List[str]=[]):
-        self.name = name
-        self.avrotype = avrotype
-        self.namespace = namespace
-        self.schema = schema
-        self.imports = imports
-        self.fields = fields
+    name: str = None
+    avrotype: str = None
+    namespace: str = None
+    schema: dict = None
+    expanded_schema: dict = None
+    expanded_types: List[object] = field(default_factory=list)
+    imports: List[Reference] = field(default_factory=list)
+    fields: Mapping[str, Field] = field(default_factory=list)
+    enum_sumbols: List[str] = field(default_factory=list)
+    #meta_fields: List[object] = field(default_factory=list)
 
     def __eq__(self, other: Union['File', str]):
         if isinstance(other, File):
@@ -30,4 +27,24 @@ class File(object):
             return self.name == other
 
     def __repr__(self):
-        return f"<FileObject:'{self.name}'>"
+        return f"<FileObject:'{self.name}' - {self.imports}>"
+
+    def expand(self):                
+        # print(self.expanded_schema)
+        self.expanded_schema['fields']=[]
+        # print(self.expanded_schema)
+        already_added = []
+        # print(self.fields)
+        for f in self.fields.values():            
+            if f.name not in already_added:
+                self.expanded_schema['fields'].append(f.to_dict(already_added))
+                already_added.append(f.name)
+        
+        # print(self.expanded_schema)
+
+    def has_uuid_field(self):
+        for imp in self.imports:
+            if imp.name == "Uuid":
+                return True
+
+        return False

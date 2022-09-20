@@ -21,13 +21,6 @@
         "type" : "array",
         "items" : "Thing"
      } ]
-  }, {
-     "name" : "nullOrMap",
-     "type" : [ "null", {
-        "type" : "map",
-        "values": "float"
-     } ]
-  }
-  ]
+  } ]
 }
 

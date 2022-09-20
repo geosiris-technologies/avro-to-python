@@ -31,37 +31,10 @@ def _create_reference(file: dict) -> dict:
     )
 
 
-def _get_name(obj: dict) -> str:
-    """ Fetches the non-fullname of the node, if one exist.
-
-    Only named types should have the name key.
-    This function doesn't check that but will raise ValueError
-    if name isn't set.
-    If the name is a fullname, the name part is returned.
-    Otherwise the set name is returned.
-
-
-    Parameters
-    ----------
-        obj: dict
-            serialized object resembling an avsc schema
-
-    Returns
-    -------
-        String name or empty string.
-    """
-    (namespace, _, name) = obj['name'].rpartition(".")
-    if namespace and name:
-        return name
-    return obj['name']
-
-def _get_namespace(obj: dict, parent_namespace: str=None) -> str:
+def _get_namespace(obj: dict, parent_namespace: str=None) -> None:
     """ imputes the namespace if it doesn't already exist
 
     Namespaces follow the following chain of logic:
-        - If name is a fullname, use the namespace part.
-          This is how the Java avro-tools jar behaves, which is used
-          as a reference implementation.
         - Use a namespace if it exists
         - If no namespace is given:
             - If referenced in a schema, inherit the same namespace as  parent
@@ -78,11 +51,8 @@ def _get_namespace(obj: dict, parent_namespace: str=None) -> str:
 
     Returns
     -------
-        String namespace or empty string.
+        None
     """
-    (namespace, _, name) = obj.get('name', '').rpartition(".")
-    if namespace and name:
-        return namespace
     if obj.get('namespace', None):
         return obj['namespace']
     elif parent_namespace:
@@ -93,6 +63,7 @@ def _get_namespace(obj: dict, parent_namespace: str=None) -> str:
 
 def get_union_types(
     field: Field,
+    use_strict: bool = True,
     PRIMITIVE_TYPE_MAP: dict=PRIMITIVE_TYPE_MAP
 ) -> str:
     """ Takes a field object and returns the types of the fields
@@ -116,7 +87,10 @@ def get_union_types(
 
         # primitive type
         if obj.fieldtype == 'primitive':
-            out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
+            if use_strict:
+                out_types.append("Strict[" + PRIMITIVE_TYPE_MAP.get(obj.avrotype) + "]")
+            else:
+                out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
 
         # reference to a named type
         elif obj.fieldtype == 'reference':
@@ -124,9 +98,6 @@ def get_union_types(
 
         elif obj.fieldtype == 'array':
             out_types.append('list')
-
-        elif obj.fieldtype == 'map':
-            out_types.append('dict')
 
         else:
             raise ValueError('unsupported type')
@@ -171,3 +142,78 @@ def split_namespace(s: str) -> Tuple[str, str]:
     name = split.pop()
     namespace = '.'.join(split)
     return (namespace, name)
+
+class StringType:
+    UPPER = 1
+    LOWER = 2
+    NUMERIC = 3
+    OTHER = 4
+    
+def classify(character: str) -> int:
+    """String classifier."""
+    if character.isupper():
+        return StringType.UPPER
+    if character.islower():
+        return StringType.LOWER
+    if character.isnumeric():
+        return StringType.NUMERIC
+
+    return StringType.OTHER
+
+def split_words(value: str) -> List[str]:
+    """Split a string on new capital letters and not alphanumeric
+    characters."""
+    words: List[str] = []
+    buffer: List[str] = []
+    previous = None
+
+    def flush():
+        if buffer:
+            words.append("".join(buffer))
+            buffer.clear()
+
+    for char in value:
+        tp = classify(char)
+        if tp == StringType.OTHER:
+            flush()
+        elif not previous or tp == previous:
+            buffer.append(char)
+        elif tp == StringType.UPPER and previous != StringType.UPPER:
+            flush()
+            buffer.append(char)
+        else:
+            buffer.append(char)
+
+        previous = tp
+
+    flush()
+    return words    
+
+def safe_snake(string: str, default: str = "value") -> str:
+    """
+    Normalize the given string to make it safe for python source code.
+
+    Return or prepend the default value if after all filters the result
+    is invalid.
+    """
+    if not string:
+        return default
+
+    if re.match(r"^-\d*\.?\d+$", string):
+        return f"{default}_minus_{string}"
+
+    # Remove invalid characters
+    string = re.sub("[^0-9a-zA-Z_-]", " ", string).strip()
+
+    if not string:
+        return default
+
+    string = string.strip("_")
+
+    if not string[0].isalpha():
+        return f"{default}_{string}"
+
+    if string.lower() in stop_words:
+        return f"{string}_{default}"
+
+    return string

@@ -1,6 +1,7 @@
 """ helper files for avro serialization """
 
 from enum import Enum, EnumMeta
+from uuid import UUID
 
 
 def default_json_serialize(obj):
@@ -18,6 +19,10 @@ def todict(obj, classkey=None):
         for (k, v) in obj.items():
             data[k] = todict(v, classkey)
         return data
+    elif isinstance(obj, UUID):
+        return obj.dict()
+    elif isinstance(obj, bytes):
+        return obj
     elif isinstance(obj, Enum):
         return obj.value
     elif hasattr(obj, "_ast"):

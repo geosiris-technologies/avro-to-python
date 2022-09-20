@@ -1,25 +1,61 @@
 {%- block record -%}
-class {{file.name}}(object):
 
-    {% include 'partials/avroSchema.j2'|indent(-4) %}
-    def __init__(self, obj: Union[str, dict, '{{file.name}}']) -> None:
-        if isinstance(obj, str):
-            obj = json.loads(obj)
+{% set ns = namespace(optional=false) %}
+class {{file.name}}(ETPModel):
+{%- if file.fields|length == 0: -%} 
+    pass
+{% else -%}
+{# first the fields without defaults then the others -#}
+{%- for name, field in file.fields.items() -%}
+    {%- if field.default is none: -%}
+    {%- include 'fields/fieldFactory.j2' -%}
+    {%- endif -%}
+{%- endfor -%}
+{%- for name, field in file.fields.items() -%}
+    {%- if field.default is not none: -%}
+    {%- include 'fields/fieldFactory.j2' -%}
+    {%- endif -%}
+{%- endfor -%}
+{% endif -%}
 
-        elif isinstance(obj, type(self)):
-            obj = obj.__dict__
+{% if file.name == 'AnyArray' %}
+    # def dict(self, *args, **kwargs) -> dict[str, object]:
+    #     if isinstance(self.item, ArrayOfFloat):
+    #         return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfFloat",{'values': self.item.values})}
+    #     elif isinstance(self.item, ArrayOfDouble):
+    #         return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfDouble",{'values': self.item.values})}
+    #     elif isinstance(self.item, ArrayOfInt):
+    #         return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfInt",{'values': self.item.values})}
+    #     elif isinstance(self.item, ArrayOfLong):
+    #         return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfLong",{'values': self.item.values})}
+    #     elif isinstance(self.item, ArrayOfBoolean):
+    #         return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfBoolean",{'values': self.item.values})}
+    #     elif isinstance(self.item, ArrayOfString):
+    #         return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfString",{'values': self.item.values})}
+    #     else:
+    #         return super().dict(*args, **kwargs)
 
-        elif not isinstance(obj, dict):
-            raise TypeError(
-                f"{type(obj)} is not in ('str', 'dict', '{{file.name}}')"
-            )
-{% for name, field in file.fields.items() %}
-        {% include 'partials/objectSetter.j2' %}
-{% endfor %}
-    def dict(self):
-        return todict(self)
-{# add setter functions for attributes -#}
-{% for name, field in file.fields.items() -%}
-{% include 'fields/fieldFactory.j2' %}
-{% endfor -%}
-{%- endblock -%}
+    # @classmethod
+    # def __get_validators__(cls):        
+    #     yield cls.validate
+
+    # @classmethod
+    # def validate(cls, v):        
+    #     if isinstance(v, AnyArray):
+    #         return v
+    #     elif isinstance(v["item"], (tuple, list)):
+    #         if v["item"][0].endswith("ArrayOfBoolean"):
+    #             return cls.construct(item =ArrayOfBoolean(values=v["item"][1]["values"]))
+    #         elif v["item"][0].endswith("ArrayOfInt"):
+    #             return cls.construct(item=ArrayOfInt(values=v["item"][1]["values"]))
+    #         elif v["item"][0].endswith("ArrayOfLong"):
+    #             return cls.construct(item=ArrayOfLong(values=v["item"][1]["values"]))
+    #         elif v["item"][0].endswith("ArrayOfFloat"):
+    #             return cls.construct(item=ArrayOfFloat(values=v["item"][1]["values"]))
+    #         elif v["item"][0].endswith("ArrayOfDouble"):
+    #             return cls.construct(item=ArrayOfDouble(values=v["item"][1]["values"]))
+    #         elif v["item"][0].endswith("ArrayOfString"):
+    #             return cls.construct(item=ArrayOfString(values=v["item"][1]["values"]))
+{% endif %}
+
+{%- endblock %}

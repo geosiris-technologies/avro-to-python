@@ -2,11 +2,12 @@
 
 from typing import Tuple
 
-from avro_to_python.classes.field import Field
+from avro_to_python.classes.field import ArrayField
 
 from avro_to_python.utils.avro.types.primitive import _primitive_type
 from avro_to_python.utils.avro.types.record import _record_field
 from avro_to_python.utils.avro.types.enum import _enum_field
+from avro_to_python.utils.avro.types.union import _union_field
 from avro_to_python.utils.avro.types.reference import _reference_type
 from avro_to_python.utils.avro.types.type_factory import _get_field_type
 
@@ -37,14 +38,18 @@ def _array_field(field: dict,
     kwargs = {
         'name': field['name'],
         'fieldtype': 'array',
-        'avrotype': None,
+        # 'avrotype': None,
         'default': None,
-        'reference_name': None,
-        'reference_namespace': None,
+        # 'reference_name': None,
+        # 'reference_namespace': None,
         'array_item_type': None
     }
 
+    
     if isinstance(field['type']['items'], str):
+        field['type']['items'] = {'type': field['type']['items']}
+
+    elif isinstance(field['type']['items'], list):
         field['type']['items'] = {'type': field['type']['items']}
 
     field_item_type = _get_field_type(
@@ -83,13 +88,32 @@ def _array_field(field: dict,
     elif field_item_type == 'reference':
         kwargs.update({
             'array_item_type': _reference_type(
-                field={'name': field['type']['items']['type'], 'type': parent_namespace},
+                field={'name': 'reference', 'type': field['type']['items']['type']},
                 references=references)
+        })
+
+    elif field_item_type == 'union':
+        kwargs.update({
+            'array_item_type': _union_field(
+                field={'name': 'union', 'type': field['type']['items']['type']},
+                parent_namespace=parent_namespace,
+                queue=queue, references=references)
         })
 
     else:
         raise ValueError(
-            f"avro type {field['items']['type']} is not supported"
+            f"avro type {field['type']['items']['type']} is not supported"
         )
 
-    return Field(**kwargs)
+
+    default_type = field.get('default', None)
+    
+    if default_type is not None:
+        kwargs.update({'default': default_type})
+        # if default_type:
+        #     print(f"{kwargs['name']} - {default_type} - {type(default_type)} not empty")
+        #     # kwargs.update({'default': []})
+        # else:
+        #     print(f"{kwargs['name']} - {default_type} - {type(default_type)} empty")
+
+    return ArrayField(**kwargs)

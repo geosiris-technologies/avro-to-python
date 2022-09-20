@@ -1,16 +1,13 @@
 """ base Reference class """
 
 from typing import Union
+from dataclasses import dataclass, field
 
-
+@dataclass
 class Reference(object):
 
-    def __init__(self, name: str, namespace: str):
-        """
-            Base struct on Reference Class
-        """
-        self.name = name
-        self.namespace = namespace
+    name: str
+    namespace: str
 
     def __eq__(self, other: Union['Reference', str]):
         return self.name + self.namespace == other.name + other.namespace

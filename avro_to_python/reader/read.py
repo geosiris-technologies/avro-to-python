@@ -3,8 +3,12 @@
 import copy
 import os
 import json
+from typing import Any, List
 
-from avro_to_python.classes.node import Node
+from anytree import Node, RenderTree, PostOrderIter, search
+from nested_lookup import nested_lookup, nested_update
+
+# from avro_to_python.classes.node import Node
 from avro_to_python.classes.file import File
 
 from avro_to_python.utils.paths import (
@@ -14,10 +18,16 @@ from avro_to_python.utils.exceptions import (
     NoFileOrDir, MissingFileError, NoFilesError
 )
 
-from avro_to_python.utils.avro.helpers import _get_name, _get_namespace
+from avro_to_python.utils.avro.helpers import _get_namespace, split_namespace, split_words
 from avro_to_python.utils.avro.files.enum import _enum_file
 from avro_to_python.utils.avro.files.record import _record_file
+from avro_to_python.utils.avro.files.fixed import _fixed_file
+from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPES
+from avro_to_python.utils.avro.types.type_factory import _get_field_type
 
+# from avro_to_python.utils.avro.files.meta import _meta_file
+
+import json
 
 class AvscReader(object):
     """
@@ -75,47 +85,16 @@ class AvscReader(object):
 
         self.obj['avsc'] = []
 
+
+    def snake_case(self, value: str, **kwargs: Any) -> str:
+        """Convert the given string to snake case."""
+        return "_".join(map(str.lower, split_words(value)))
+        
     def read(self):
         """ runner method for AvscReader object """
-        self._read_files()
+        self._read_files()        
         self._build_namespace_tree()
-
-    def _traverse_tree(self, root_node: dict, namespace: str='') -> dict:
-        """ Traverses the namespace tree to add files to namespace paths
-
-        Parameters
-        ----------
-            root_node: dict
-                root_node node to start tree traversal
-            namespace: str (period seperated)
-                namespace representing the tree path
-
-        Returns
-        -------
-            current_node: dict
-                child node in tree representing namespace destination
-        """
-        current_node = root_node
-        namespaces = namespace.split('.')
-
-        # empty namespace
-        if namespace == '':
-            return current_node
-
-        for name in namespaces:
-
-            # create node if it doesn't exist
-            if name not in current_node.children:
-                current_node.children[name] = Node(
-                    name=name,
-                    children={},
-                    files={}
-                )
-
-            # move through tree
-            current_node = current_node.children[name]
-
-        return current_node
+        self._expand_schemas()
 
     def _read_files(self) -> None:
         """ reads and serializes avsc files to central object
@@ -128,49 +107,141 @@ class AvscReader(object):
     def _build_namespace_tree(self) -> None:
         """ builds tree structure on namespace
         """
-        # initialize empty node with empty string name
-        root_node = Node(name='')
-
         # populate queue prior to tree building
         queue = copy.deepcopy(self.obj['avsc'])
 
-        while queue:
+        nodes = {}
 
+        while queue:
             # get first item in queue
             item = queue.pop(0)
 
-            # impute namespace and name
-            item['namespace'] = _get_namespace(item)
-            item['name'] = _get_name(item)
+            save_schema = copy.deepcopy(item)            
 
-            # traverse to namespace starting from root_node
-            current_node = self._traverse_tree(
-                root_node=root_node, namespace=item['namespace']
-            )
+            # impute namespace
+            item['namespace'] = _get_namespace(item)            
+
+            # traverse to namespace starting from root_node                 
+            namespaces = item['namespace'].split('.')
+            
+
+            current_node = None
+            for name in namespaces:
+                if name not in nodes:                    
+                    nodes[name] = Node(name=name, parent=current_node)                
+                
+                current_node = nodes[name]
 
             # initialize empty file obj for mutation
             file = File(
                 name=item['name'],
                 avrotype=item['type'],
                 namespace=item['namespace'],
-                schema=item,
+                schema=save_schema,
+                expanded_schema=save_schema,
+                expanded_types=[],
                 fields={},
                 imports=[],
                 enum_sumbols=[]
             )
 
+            # keys = [x for x in item.keys() if x not in ['name','type','namespace','fields']]
+            # _meta_file(file, item, keys)
+            
             # handle record type
             if file.avrotype == 'record':
                 _record_file(file, item, queue)
-
             # handle enum type file
             elif file.avrotype == 'enum':
                 _enum_file(file, item)
+            # handle fixed type file
+            elif file.avrotype == 'fixed':
+                _fixed_file(file, item)
             else:
-                raise ValueError(
-                    f"{file['type']} is currently not supported."
-                )
+                raise ValueError(f"{item['type']} is currently not supported.")
+            
 
-            current_node.files[item['name']] = file
+            Node(name=item['name'], parent=current_node, file=file) 
 
-        self.file_tree = root_node
+        self.file_tree = next(iter(nodes.values())).root
+
+
+    def _reshape_type2(self, typescheme, exclusionTypes, isroot, map_all_types):
+
+        dependTable = typescheme["depends"]
+
+        typescheme["depends"] = []
+        # namespace = typescheme["namespace"]
+        # if not isroot:
+        #     typescheme.pop("namespace", None)
+
+        string_view = json.dumps(typescheme)
+
+        for dependTypeName in dependTable:
+            if dependTypeName not in exclusionTypes:
+                depend_obj, exclusionTypes = self._reshape_type2(map_all_types[dependTypeName], exclusionTypes, False, map_all_types)
+                string_view = string_view.replace('"'+dependTypeName+'"', json.dumps(depend_obj), 1)
+                exclusionTypes.append(dependTypeName)
+
+        val = json.loads(string_view)
+        # if isroot:
+        val["depends"] = dependTable
+        #else:
+        #    val.pop("depends", None)
+        typescheme["depends"] = dependTable
+        # if not isroot:
+        #     typescheme["namespace"] = namespace
+        return (val, exclusionTypes)
+
+
+
+    def _loop_reshape2(self, map_all_types):
+        mapRes = {}
+        for schemeName in map_all_types:
+            mapRes[schemeName] = self._reshape_type2(map_all_types[schemeName], [], True, map_all_types)        
+        return mapRes
+
+
+    def _expand_schemas(self) -> None:
+
+        all_schemas = []
+        
+        # finit = open("./init_avsc.avpr", "w")
+        # finit.write(json.dumps(self.obj['avsc'], indent=2))
+        # finit.close()
+
+        # 1 step: do all depends
+        for node in self.file_tree.leaves: 
+            depends_list = [ref.namespace+'.'+ref.name for ref in node.file.imports]                
+            node.file.expanded_schema['depends'] = depends_list
+            all_schemas.append(node.file.expanded_schema)  
+            # print("------------------------")
+            # print(json.dumps(node.file.schema, indent=1))
+            # print(json.dumps(node.file.expanded_schema, indent=1))
+            # print("------------------------")
+                 
+        # finit = open("./inter_avsc.avpr", "w")
+        # finit.write(json.dumps(all_schemas, indent=2))
+        # finit.close()
+
+        
+        map_not_finished_type = {}
+
+        for current_type in all_schemas:
+            map_not_finished_type[current_type["namespace"] + "." + current_type["name"]] = current_type
+
+        # print(map_not_finished_type)
+        temp = self._loop_reshape2(map_not_finished_type)        
+        self.obj['expanded_avsc'] = list(temp.values())
+
+        for node in self.file_tree.leaves:
+            f = temp[node.file.namespace+"."+node.file.name]        
+            node.file.expanded_schema = f[0]
+
+
+        # print("-----------------")
+        # print(json.dumps(self.obj['expanded_avsc'], indent=4))
+        # fres = open("./res_avsc.avpr", "w")
+        # fres.write(json.dumps(self.obj['expanded_avsc'], indent=2))
+        # fres.close()
+          

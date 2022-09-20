@@ -1,13 +1,13 @@
 """ function for handling referenced names in records files """
 
 
-from avro_to_python.classes.field import Field
+from avro_to_python.classes.field import ReferenceField
 from avro_to_python.classes.reference import Reference
 
 from avro_to_python.utils.avro.helpers import split_namespace
 
 
-def _reference_type(field: dict, references: list) -> Field:
+def _reference_type(field: dict, references: list) -> ReferenceField:
     """ Should take reference to another file already created
         and return reference object with proper name
 
@@ -23,22 +23,23 @@ def _reference_type(field: dict, references: list) -> Field:
         Field
     """
     reference = None
-    for reference in references:
-        if reference.name == field['name']:
+    for ref in references:
+        if ref.name == field['name']:
+            reference = ref
             break
 
     # should only happen with array field references
     if not reference:
-        namespace, name = split_namespace(f"{field['type']}.{field['name']}")
+        namespace, name = split_namespace(field['type'])
         reference = Reference(name=name, namespace=namespace)
         references.append(reference)
 
     kwargs = {
         'name': field['name'],
         'fieldtype': 'reference',
-        'avrotype': None,
+        # 'avrotype': None,
         'reference_name': reference.name,
         'reference_namespace': reference.namespace,
         'default': field.get('default', None)
     }
-    return Field(**kwargs)
+    return ReferenceField(**kwargs)

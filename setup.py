@@ -4,6 +4,7 @@
 """The setup script."""
 
 from setuptools import setup, find_packages
+import os
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -11,23 +12,29 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Jinja2>=2.10.3', 'Click>=7.0,<=8.0']
+requirements = ['Jinja2==3.1.2', 'Click==8.1.3', 'anytree==2.8.0',  'nested-lookup==0.2.25', 'typingx==0.6.0', 'wheel==0.33.6']
 
 test_requirements = [
-    'pip==21.1',
-    'bump2version==0.5.11',
-    'wheel==0.33.6',
-    'watchdog==0.9.0',
-    'flake8==3.7.8',
-    'tox>=3.14.0',
-    'coverage==4.5.4',
-    'Sphinx==1.8.5',
-    'twine==1.14.0',
-    'Click>=7.0,<=8.0',
-    'pytest==4.6.5',
-    'pytest-runner==5.1',
-    'Jinja2>=2.10.3'
+    'pip==19.2.3',
+    'bump2version==1.0.1',
+    'Click==8.1.3',
+    'coverage==6.4.4',
+    'flake8==5.0.4',
+    'Jinja2==3.0.3',
+    'pytest-runner==6.0.0',
+    'pytest==7.1.3',
+    'Sphinx==5.1.1',
+    'tox==3.26.0',
+    'twine==4.0.1',
+    'watchdog==2.1.9'
 ]
+
+if os.environ.get('CI_COMMIT_TAG'):
+    version = os.environ['CI_COMMIT_TAG']
+elif os.environ.get('CI_JOB_ID'):
+    version = os.environ['CI_JOB_ID']
+else:
+    version = '0.0.0'
 
 setup(
     author="Scott Rothbarth",
@@ -48,6 +55,7 @@ setup(
     entry_points={
         'console_scripts': [
             'avro-to-python=avro_to_python.cli:main',
+            'avpr-to-avsc=avro_to_python.avpr_to_avsc:main'
         ],
     },
     install_requires=requirements,
@@ -60,6 +68,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/srserves85/avro-to-python',
-    version='0.3.3',
+    version=version,
     zip_safe=False,
 )

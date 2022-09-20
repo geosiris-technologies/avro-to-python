@@ -2,12 +2,13 @@
 
 NoFileOrDir = ValueError('Must specify a file or directory')
 
-NotAvscFileError = ValueError()
+class NotAvscFileError(ValueError):
+    pass
 
-MissingFileError = OSError()
+class MissingFileError(OSError):
+    pass
 
-NoFilesError = OSError
+class NoFilesError(OSError):
+    pass
 
-BadReferenceError = ValueError(
-    'field to be referenced missing namespace or name keys'
-)
+BadReferenceError = ValueError('field to be referenced missing namespace or name keys')

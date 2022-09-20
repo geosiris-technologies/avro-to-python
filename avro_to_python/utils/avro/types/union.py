@@ -2,16 +2,14 @@
 
 from typing import Tuple
 
-from avro_to_python.classes.field import Field
+from avro_to_python.classes.field import UnionField
 
 from avro_to_python.utils.avro.types.type_factory import _get_field_type
 from avro_to_python.utils.avro.types.primitive import _primitive_type
 from avro_to_python.utils.avro.types.reference import _reference_type
 from avro_to_python.utils.avro.types.enum import _enum_field
 from avro_to_python.utils.avro.types.record import _record_field
-from avro_to_python.utils.avro.types.array import _array_field
-from avro_to_python.utils.avro.types.map import _map_field
-from avro_to_python.utils.avro.helpers import _get_namespace
+# from avro_to_python.utils.avro.types.array import _array_field
 
 
 def _union_field(field: dict,
@@ -45,13 +43,19 @@ def _union_field(field: dict,
     kwargs = {
         'name': field['name'],
         'fieldtype': 'union',
-        'avrotype': None,
+        # 'avrotype': None,
         'default': field.get('default', None),
-        'reference_name': None,
-        'reference_namespace': None,
-        'array_item_type': None,
+        # 'reference_name': None,
+        # 'reference_namespace': None,
+        # 'array_item_type': None,
         'union_types': []
     }
+    
+    # print(field)
+
+    if "null" in field['type']:
+        # print("nullable")
+        kwargs['optional'] = True
 
     # iterate through possibly types
     for typ in field['type']:
@@ -60,37 +64,36 @@ def _union_field(field: dict,
             references=references
         )
 
+        if field_type == 'null':
+            pass
+        
         # primitive types
-        if field_type == 'primitive':
+        elif field_type == 'primitive':          
             kwargs['union_types'].append(_primitive_type({
-                'name': 'uniontype',
-                'type': typ
+                'name': 'unionField',
+               'type': typ
             }))
 
         # nested complex record
         elif field_type == 'record':
             kwargs['union_types'].append(_record_field(
-                field={'name': 'uniontype', 'type': typ},
-                parent_namespace=_get_namespace(typ, parent_namespace),
-                queue=queue,
-                references=references
-            ))
-
-        elif field_type == 'array':
-            kwargs['union_types'].append(_array_field(field={'name': 'arraytype', 'type': typ}, parent_namespace=parent_namespace, queue=queue, references=references))
-
-        # nested complex record
-        elif field_type == 'enum':
-            kwargs['union_types'].append(_enum_field(
-                field={'name': 'uniontype', 'type': typ},
+                field={'name': 'unionField', 'type': typ},
                 parent_namespace=parent_namespace,
                 queue=queue,
                 references=references
             ))
 
-        elif field_type == 'map':
-            kwargs['union_types'].append(_map_field(
-                field={'name': 'uniontype', 'type': typ},
+        elif field_type == 'array':
+            kwargs['union_types'].append(_array_field(
+                field={'name': 'arraytype', 'type': typ},
+                parent_namespace=parent_namespace,
+                queue=queue,
+                references=references))
+
+        # nested complex record
+        elif field_type == 'enum':
+            kwargs['union_types'].append(_enum_field(
+                field={'name': 'unionField', 'type': typ},
                 parent_namespace=parent_namespace,
                 queue=queue,
                 references=references
@@ -100,14 +103,14 @@ def _union_field(field: dict,
         # handle reference types
         elif field_type == 'reference':
             kwargs['union_types'].append(_reference_type(
-                field={'name': 'uniontype',
+                field={'name': typ,
                        'type': typ},
                 references=references
             ))
 
         else:
+            import pdb; pdb.set_trace()
             raise ValueError(
                 f"avro type {field['items']['type']} is not supported"
             )
-
-    return Field(**kwargs)
+    return UnionField(**kwargs)

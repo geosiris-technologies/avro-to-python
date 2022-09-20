@@ -44,6 +44,7 @@ def _enum_field(field: dict,
     references.append(reference)
 
     queue.append(field['type'])
+    
 
     kwargs.update({
         'name': field['name'],

@@ -2,7 +2,7 @@
 
 from typing import Tuple
 
-from avro_to_python.classes.field import Field
+from avro_to_python.classes.field import MapField
 
 from avro_to_python.utils.avro.types.type_factory import _get_field_type
 from avro_to_python.utils.avro.types.primitive import _primitive_type
@@ -39,12 +39,12 @@ def _map_field(field: dict,
     kwargs = {
         'name': field['name'],
         'fieldtype': 'map',
-        'avrotype': None,
-        'default': field.get('default', None),
-        'reference_name': None,
-        'reference_namespace': None,
-        'array_item_type': None,
-        'union_types': [],
+        # 'avrotype': None,
+        'default': None,#field.get('default', None),
+        # 'reference_name': None,
+        # 'reference_namespace': None,
+        # 'array_item_type': None,
+        # 'union_types': [],
         'map_type': None
     }
 
@@ -111,7 +111,7 @@ def _map_field(field: dict,
     elif map_type == 'reference':
         kwargs.update({
             'map_type': _reference_type(
-                field={'name': field['type']['values']},
+                field={'name': 'reference', 'type': field['type']['values']},
                 references=references)
         })
 
@@ -120,4 +120,14 @@ def _map_field(field: dict,
             f"avro type {field['type']['values']} is not supported"
         )
 
-    return Field(**kwargs)
+    default_type = field.get('default', None)
+
+    if default_type is not None:
+        kwargs.update({'default': default_type})
+        # if default_type:
+        #     print(f"{kwargs['name']} - {default_type} - {type(default_type)} not empty")
+        #     # kwargs.update({'default': []})
+        # else:
+        #     print(f"{kwargs['name']} - {default_type} - {type(default_type)} empty")
+
+    return MapField(**kwargs)

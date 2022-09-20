@@ -18,8 +18,11 @@ def _get_field_type(field: dict, references: list=None) -> str:
             type of field
             Must be one of (array, primitive, union, enum, record, logical)
     """
-
+    
     if isinstance(field['type'], dict):
+
+        if field['type']['type'] == 'null':
+            return 'null'
 
         # nested array
         if field['type']['type'] == 'array':
@@ -56,7 +59,11 @@ def _get_field_type(field: dict, references: list=None) -> str:
 
     # handle primitive types
     elif isinstance(field['type'], str):
-        if field['type'] in PRIMITIVE_TYPES:
+
+        if field['type'] == 'null':
+            return 'null'
+
+        elif field['type'] in PRIMITIVE_TYPES:
             return 'primitive'
 
         elif field['type'] == 'record':

@@ -1,11 +1,19 @@
+
+{%- if file.avrotype == 'fixed' -%}
+{%- include 'files/fixed.j2' -%}
+{%- else -%}
 {%- include 'partials/header.j2' %}
 {% include 'imports/basicImports.j2' %}
 {% include 'imports/fileImports.j2'%}
 {##}
 {##}
+{% include 'partials/avroSchema.j2' %}
+
 {%- if file.avrotype == 'enum' -%}
 {%- include 'files/enum.j2' -%}
 {%- elif file.avrotype == 'record' -%}
 {%- include 'files/record.j2' -%}
 {%- endif -%}
+
 {%- include 'partials/footer.j2' %}
+{% endif %}

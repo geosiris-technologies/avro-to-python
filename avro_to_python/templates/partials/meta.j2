@@ -1,0 +1,9 @@
+{%- block meta %}
+
+    class Meta:
+
+        {% for name, field in file.meta_fields -%}
+        {{name}}: str = {{field}}
+        {% endfor %}
+
+{%- endblock %}
