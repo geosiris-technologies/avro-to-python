@@ -25,16 +25,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-
-      - name: Get build artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: dist-artifact
-          path: dist/
-          
       - name: Install from build
         run: |
           python setup.py sdist bdist_wheel
+
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-artifact
+          path: dist/
 
   # publish:
   #   name: Publish to PyPI
