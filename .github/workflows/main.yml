@@ -80,5 +80,5 @@ jobs:
           POETRY_PYPI_TOKEN_PASSWORD: ${{ secrets.POETRY_PYPI_TOKEN_PASSWORD}}
         run: |
           poetry config repositories.test https://test.pypi.org/legacy/
-          poetry config http-basic.foo-pub ${{ secrets.POETRY_PYPI_TOKEN_USERNAME}} ${{ secrets.POETRY_PYPI_TOKEN_PASSWORD}}
+          poetry config http-basic.test ${{ secrets.POETRY_PYPI_TOKEN_USERNAME}} ${{ secrets.POETRY_PYPI_TOKEN_PASSWORD}}
           poetry publish --repository test
