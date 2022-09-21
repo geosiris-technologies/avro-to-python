@@ -1,0 +1,60 @@
+name: build-and-push-TEST
+
+on: [push,pull_request]
+
+jobs:
+  build:
+    name: Publish to PyPI-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      # Retrieve the code and GIT history so that poetry-dynamic-versioning knows which version to upload
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          pip install poetry-dynamic-versioning
+
+      - name: Build Poetry
+        run: |
+          poetry install
+          poetry build
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: |
+            dist
+
+  publish:
+    name: Publish to PyPI-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-artifact
+          path: dist/
+
+      - name: Upload to PyPI
+        run: |
+          poetry config repositories.test https://test.pypi.org/legacy/
+          poetry config http-basic.test ${{ secrets.POETRY_PYPI_TOKEN_USERNAME}} ${{ secrets.POETRY_TEST_PYPI_TOKEN_PASSWORD}}
+          poetry publish --repository test
