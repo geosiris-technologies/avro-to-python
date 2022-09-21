@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-"""Console script for avro_to_python."""
+"""Console script for avro_to_python_etp."""
 import os
 import sys
 
 import click
 from click import Path
 
-from avro_to_python.reader.read import AvscReader
-from avro_to_python.writer.writer import AvroWriter
+from avro_to_python_etp.reader.read import AvscReader
+from avro_to_python_etp.writer.writer import AvroWriter
 
 
 PIP_HELP = 'make package pip installable using this name'

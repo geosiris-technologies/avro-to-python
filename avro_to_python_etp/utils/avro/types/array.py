@@ -2,14 +2,14 @@
 
 from typing import Tuple
 
-from avro_to_python.classes.field import ArrayField
+from avro_to_python_etp.classes.field import ArrayField
 
-from avro_to_python.utils.avro.types.primitive import _primitive_type
-from avro_to_python.utils.avro.types.record import _record_field
-from avro_to_python.utils.avro.types.enum import _enum_field
-from avro_to_python.utils.avro.types.union import _union_field
-from avro_to_python.utils.avro.types.reference import _reference_type
-from avro_to_python.utils.avro.types.type_factory import _get_field_type
+from avro_to_python_etp.utils.avro.types.primitive import _primitive_type
+from avro_to_python_etp.utils.avro.types.record import _record_field
+from avro_to_python_etp.utils.avro.types.enum import _enum_field
+from avro_to_python_etp.utils.avro.types.union import _union_field
+from avro_to_python_etp.utils.avro.types.reference import _reference_type
+from avro_to_python_etp.utils.avro.types.type_factory import _get_field_type
 
 
 def _array_field(field: dict,

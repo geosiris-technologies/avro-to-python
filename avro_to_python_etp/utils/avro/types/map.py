@@ -2,14 +2,14 @@
 
 from typing import Tuple
 
-from avro_to_python.classes.field import MapField
+from avro_to_python_etp.classes.field import MapField
 
-from avro_to_python.utils.avro.types.type_factory import _get_field_type
-from avro_to_python.utils.avro.types.primitive import _primitive_type
-from avro_to_python.utils.avro.types.reference import _reference_type
-from avro_to_python.utils.avro.types.enum import _enum_field
-from avro_to_python.utils.avro.types.record import _record_field
-from avro_to_python.utils.avro.types.array import _array_field
+from avro_to_python_etp.utils.avro.types.type_factory import _get_field_type
+from avro_to_python_etp.utils.avro.types.primitive import _primitive_type
+from avro_to_python_etp.utils.avro.types.reference import _reference_type
+from avro_to_python_etp.utils.avro.types.enum import _enum_field
+from avro_to_python_etp.utils.avro.types.record import _record_field
+from avro_to_python_etp.utils.avro.types.array import _array_field
 
 def _map_field(field: dict,
                parent_namespace: str=None,

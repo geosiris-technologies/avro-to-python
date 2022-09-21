@@ -3,8 +3,8 @@
 from typing import List, Union, Mapping
 from dataclasses import dataclass, field
 
-from avro_to_python.classes.field import Field
-from avro_to_python.classes.reference import Reference
+from avro_to_python_etp.classes.field import Field
+from avro_to_python_etp.classes.reference import Reference
 
 @dataclass
 class File(object):

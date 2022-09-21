@@ -1,10 +1,10 @@
 """ function for handling referenced names in records files """
 
 
-from avro_to_python.classes.field import ReferenceField
-from avro_to_python.classes.reference import Reference
+from avro_to_python_etp.classes.field import ReferenceField
+from avro_to_python_etp.classes.reference import Reference
 
-from avro_to_python.utils.avro.helpers import split_namespace
+from avro_to_python_etp.utils.avro.helpers import split_namespace
 
 
 def _reference_type(field: dict, references: list) -> ReferenceField:

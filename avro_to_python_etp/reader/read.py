@@ -8,24 +8,24 @@ from typing import Any, List
 from anytree import Node, RenderTree, PostOrderIter, search
 from nested_lookup import nested_lookup, nested_update
 
-# from avro_to_python.classes.node import Node
-from avro_to_python.classes.file import File
+# from avro_to_python_etp.classes.node import Node
+from avro_to_python_etp.classes.file import File
 
-from avro_to_python.utils.paths import (
+from avro_to_python_etp.utils.paths import (
     get_system_path, get_avsc_files, verify_path_exists
 )
-from avro_to_python.utils.exceptions import (
+from avro_to_python_etp.utils.exceptions import (
     NoFileOrDir, MissingFileError, NoFilesError
 )
 
-from avro_to_python.utils.avro.helpers import _get_namespace, split_namespace, split_words
-from avro_to_python.utils.avro.files.enum import _enum_file
-from avro_to_python.utils.avro.files.record import _record_file
-from avro_to_python.utils.avro.files.fixed import _fixed_file
-from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPES
-from avro_to_python.utils.avro.types.type_factory import _get_field_type
+from avro_to_python_etp.utils.avro.helpers import _get_namespace, split_namespace, split_words
+from avro_to_python_etp.utils.avro.files.enum import _enum_file
+from avro_to_python_etp.utils.avro.files.record import _record_file
+from avro_to_python_etp.utils.avro.files.fixed import _fixed_file
+from avro_to_python_etp.utils.avro.primitive_types import PRIMITIVE_TYPES
+from avro_to_python_etp.utils.avro.types.type_factory import _get_field_type
 
-# from avro_to_python.utils.avro.files.meta import _meta_file
+# from avro_to_python_etp.utils.avro.files.meta import _meta_file
 
 import json
 

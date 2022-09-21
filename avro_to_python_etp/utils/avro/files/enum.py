@@ -1,10 +1,10 @@
-""" Contains hidden functions to handle fixed file type """
+""" Contains hidden functions to handle enum file type """
 
 
-from avro_to_python.classes.file import File
+from avro_to_python_etp.classes.file import File
 
 
-def _fixed_file(file: File, item: dict) -> None:
+def _enum_file(file: File, item: dict) -> None:
     """ Function to format enum field object
 
     Parameters
@@ -14,5 +14,5 @@ def _fixed_file(file: File, item: dict) -> None:
 
     """
     # add symbol and default information
-    file.size = item['size']
+    file.symbols = item['symbols']
     file.default = item.get('default', None)

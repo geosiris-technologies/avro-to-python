@@ -1,7 +1,7 @@
 """ contains function for handling avro field types """
 
 
-from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPES
+from avro_to_python_etp.utils.avro.primitive_types import PRIMITIVE_TYPES
 
 
 def _get_field_type(field: dict, references: list=None) -> str:

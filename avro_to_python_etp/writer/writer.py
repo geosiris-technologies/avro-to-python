@@ -9,9 +9,9 @@ from jinja2 import Environment, FileSystemLoader
 import keyword
 import builtins
 
-from avro_to_python.utils.avro.helpers import get_union_types, split_words
-from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPE_MAP
-from avro_to_python.utils.paths import (
+from avro_to_python_etp.utils.avro.helpers import get_union_types, split_words
+from avro_to_python_etp.utils.avro.primitive_types import PRIMITIVE_TYPE_MAP
+from avro_to_python_etp.utils.paths import (
     get_system_path, verify_or_create_namespace_path, get_or_create_path,
     get_joined_path)
 

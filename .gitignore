@@ -119,3 +119,7 @@ ENV/
 #VSCode
 .vscode/
 *.code-workspace
+
+#Others 
+rc/
+output/

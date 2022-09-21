@@ -1,8 +1,8 @@
 from typing import Tuple
 
-from avro_to_python.classes.field import Field
+from avro_to_python_etp.classes.field import Field
 
-from avro_to_python.utils.avro.helpers import (
+from avro_to_python_etp.utils.avro.helpers import (
     _get_namespace, _create_reference
 )
 

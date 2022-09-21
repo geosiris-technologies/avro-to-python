@@ -2,11 +2,11 @@
 
 from typing import List, Tuple
 
-from avro_to_python.classes.reference import Reference
-from avro_to_python.classes.field import Field
+from avro_to_python_etp.classes.reference import Reference
+from avro_to_python_etp.classes.field import Field
 
-from avro_to_python.utils.exceptions import BadReferenceError
-from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPE_MAP
+from avro_to_python_etp.utils.exceptions import BadReferenceError
+from avro_to_python_etp.utils.avro.primitive_types import PRIMITIVE_TYPE_MAP
 import re
 
 def _create_reference(file: dict) -> dict:

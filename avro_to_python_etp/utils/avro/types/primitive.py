@@ -2,9 +2,9 @@
 
 from typing import Union
 
-from avro_to_python.utils.avro.primitive_types import PRIMITIVE_TYPES
+from avro_to_python_etp.utils.avro.primitive_types import PRIMITIVE_TYPES
 
-from avro_to_python.classes.field import PrimitiveField
+from avro_to_python_etp.classes.field import PrimitiveField
 
 kwargs = {
     'name': None,

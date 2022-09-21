@@ -1,1 +1,0 @@
-from avro_to_python.reader.read import AvscReader

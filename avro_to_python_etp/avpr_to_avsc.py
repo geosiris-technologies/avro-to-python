@@ -253,29 +253,37 @@ def parse(json_string):
 
 
 def main():
-    if os.path.isfile("etp.avpr"):
-        with open("etp.avpr") as json_file:
-            data = json.load(json_file) 
-            # proto = make_avpr_object(data)
-            types = data["types"]
-            for t in types:                                
-                t_data = t #.to_json()                
-                fullName = "./output/"+t_data["fullName"].replace(".", "/")
-                p = Path(fullName)
-                #erase last member (filename)
-                print(fullName, p.name)
-                try:
-                    os.makedirs(p.parent)
-                    print("Directory %s created successfully" % p.parent)
-                except OSError as error:
-                    print("Directory %s can not be created" % p.parent)
+    args = sys.argv[1:]
+    
+    files_path = ["etp.avpr"]
+    print("entry : ", args)
+    if len(args) > 0:
+        files_path = args
 
-                # write to file
-                with open(fullName+'.avsc', 'w') as outfile:
-                    json.dump(t_data, outfile, indent=4)    
+    for f_path in args:
+        if os.path.isfile(f_path):
+            with open(f_path) as json_file:
+                data = json.load(json_file) 
+                # proto = make_avpr_object(data)
+                types = data["types"]
+                for t in types:                                
+                    t_data = t #.to_json()                
+                    fullName = "./output/"+t_data["fullName"].replace(".", "/")
+                    p = Path(fullName)
+                    #erase last member (filename)
+                    print(fullName, p.name)
+                    try:
+                        os.makedirs(p.parent)
+                        print("Directory %s created successfully" % p.parent)
+                    except OSError as error:
+                        print("Directory %s can not be created" % p.parent)
 
-    else:
-        return
+                    # write to file
+                    with open(fullName+'.avsc', 'w') as outfile:
+                        json.dump(t_data, outfile, indent=4)    
+
+        else:
+            return
 
 if __name__ == "__main__":
     main()  # pragma: no cover

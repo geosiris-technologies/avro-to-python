@@ -2,18 +2,18 @@
 
 from typing import List
 
-from avro_to_python.classes.file import File
+from avro_to_python_etp.classes.file import File
 
-from avro_to_python.utils.avro.helpers import dedupe_imports
+from avro_to_python_etp.utils.avro.helpers import dedupe_imports
 
-from avro_to_python.utils.avro.types.array import _array_field
-from avro_to_python.utils.avro.types.enum import _enum_field
-from avro_to_python.utils.avro.types.record import _record_field
-from avro_to_python.utils.avro.types.primitive import _primitive_type
-from avro_to_python.utils.avro.types.reference import _reference_type
-from avro_to_python.utils.avro.types.type_factory import _get_field_type
-from avro_to_python.utils.avro.types.union import _union_field
-from avro_to_python.utils.avro.types.map import _map_field
+from avro_to_python_etp.utils.avro.types.array import _array_field
+from avro_to_python_etp.utils.avro.types.enum import _enum_field
+from avro_to_python_etp.utils.avro.types.record import _record_field
+from avro_to_python_etp.utils.avro.types.primitive import _primitive_type
+from avro_to_python_etp.utils.avro.types.reference import _reference_type
+from avro_to_python_etp.utils.avro.types.type_factory import _get_field_type
+from avro_to_python_etp.utils.avro.types.union import _union_field
+from avro_to_python_etp.utils.avro.types.map import _map_field
 
 
 def _record_file(file: File, item: dict, queue: List[dict]) -> None:

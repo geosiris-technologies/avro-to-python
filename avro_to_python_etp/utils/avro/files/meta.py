@@ -1,7 +1,7 @@
 """ Contains hidden functions to handle fixed file type """
 
 
-from avro_to_python.classes.file import File
+from avro_to_python_etp.classes.file import File
 
 
 def _meta_file(file: File, item: dict, keys: dict) -> None:
