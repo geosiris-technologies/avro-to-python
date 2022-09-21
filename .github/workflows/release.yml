@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -33,12 +35,13 @@ jobs:
         run: |
           poetry install
           poetry build
+          ls dist/
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
           name: dist-artifact
-          path: ${{ github.workspace }}/dist/*
+          path: ${{ github.workspace }}/dist
           retention-days: 1
 
   publish:
@@ -46,6 +49,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
