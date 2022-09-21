@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "avro-to-python-etp"
-version = "1.0.0"
+version = "1.0.2"
 authors = [
   "Scott Rothbarth <srserves85@gmail.com>",
   "Lionel Untereiner <lionel.untereiner@geosiris.com>",
   "Valentin Gauthier <valentin.gauthier@geosiris.com>"
 ]
-description = "avro-to-python is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy."
+description = "avro-to-python-etp is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy."
 readme = "README.rst"
 license = "MIT"
 classifiers = [
@@ -16,8 +16,8 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/geosiris-technologies/avro-to-python"
-"Bug Tracker" = "https://github.com/geosiris-technologies/avro-to-python/issues"
+"Homepage" = "https://github.com/geosiris-technologies/avro-to-python-etp"
+"Bug Tracker" = "https://github.com/geosiris-technologies/avro-to-python-etp/issues"
 
 [build-system]
 requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
