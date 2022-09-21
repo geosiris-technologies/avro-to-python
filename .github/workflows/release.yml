@@ -46,7 +46,7 @@ jobs:
 
   publish:
     needs: build
-    
+
     name: Publish to PyPI-test
     runs-on: ubuntu-latest
 
@@ -63,6 +63,12 @@ jobs:
         with:
           name: dist-artifact
           path: dist/
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          pip install poetry-dynamic-versioning
 
       - name: Upload to PyPI
         run: |
