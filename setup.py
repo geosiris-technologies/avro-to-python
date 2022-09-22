@@ -62,7 +62,7 @@ setup(
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='avro-to-python_etp',
+    keywords='avro-to-python-etp',
     name='avro_to_python_etp',
     packages=find_packages(include=['avro_to_python_etp', 'avro_to_python_etp.*']),
     test_suite='tests',
