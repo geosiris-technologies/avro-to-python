@@ -1,6 +1,6 @@
-==============
+==================
 avro-to-python-etp
-==============
+==================
 
 avro-to-python-etp is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy.
 
@@ -105,7 +105,7 @@ Now that you have the package installed, you can import it by it's package name 
 
 
 avro-to-python-etp in a Script
---------------------------
+------------------------------
 You can also use the reader and writer packages in avro-to-python-etp as you would any other python package. Avro to python is split between a *reader* and *writer* classes. avro-to-python-etp treates namespaces as acyclic trees and uses depth first search to ensure no duplication or namespace collisions on read and write. An example useage is below:
 
 .. code-block:: python
