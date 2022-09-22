@@ -1,5 +1,6 @@
 {%- block basicimports %}
 import typing
+from pydantic import validator
 {%- if file.avrotype == 'enum' %}
 from {{pip_import}} import StrEnum
 {# {%- elif file.avrotype == 'fixed' %} #}
