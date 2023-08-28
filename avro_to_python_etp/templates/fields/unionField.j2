@@ -2,11 +2,11 @@
     {%- if field.optional -%}
     {% set ns.optional = True %}
     {%- if field.union_types|length > 1 %}
-    {{compute_field_name(name)}}: typing.Optional[typing.Union[{{', '.join(get_union_types(field, True).split(','))}}]] = Field(alias="{{name}}")
+    {{compute_field_name(name)}}: Option<typing.Union[{{', '.join(get_union_types(field, True).split(','))}}]>
     {%- else %}
-    {{compute_field_name(name)}}: typing.Optional[{{', '.join(get_union_types(field).split(','))}}] = Field(alias="{{name}}")
+    {{compute_field_name(name)}}: Option<{{', '.join(get_union_types(field).split(','))}}>
     {%- endif %} 
     {%- else %}
-    {{compute_field_name(name)}}: typing.Union[{{', '.join(get_union_types(field, True).split(','))}}] = Field(alias="{{name}}")
+    {{compute_field_name(name)}}: typing.Union<{{', '.join(get_union_types(field, True).split(','))}}>
     {%- endif -%} 
 {%- endblock -%}

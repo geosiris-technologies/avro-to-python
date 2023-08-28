@@ -132,6 +132,8 @@ class AvscReader(object):
                 
                 current_node = nodes[name]
 
+            print(f"\n\n\n{item}")
+
             # initialize empty file obj for mutation
             file = File(
                 name=item['name'],

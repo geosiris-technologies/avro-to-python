@@ -87,10 +87,7 @@ def get_union_types(
 
         # primitive type
         if obj.fieldtype == 'primitive':
-            if use_strict:
-                out_types.append("Strict[" + PRIMITIVE_TYPE_MAP.get(obj.avrotype) + "]")
-            else:
-                out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
+            out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
 
         # reference to a named type
         elif obj.fieldtype == 'reference':

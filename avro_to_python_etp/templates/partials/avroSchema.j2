@@ -1,8 +1,6 @@
 {%- macro get_json_schema(schema) -%}
-avro_schema: typing.Final[str] = '{{ json.dumps(schema) }}'
-{# {{'schema: typing.ClassVar[str] = """\n' + json.dumps(schema)|compress + '\n"""'}} #}
+	pub avro_schema: String = String::from(r#"{{ json.dumps(schema) }}"#)
 {%- endmacro -%}
-
 {%- block schema -%}
-{{get_json_schema(file.expanded_schema)}}
+	{{get_json_schema(file.expanded_schema)}}
 {%- endblock -%}

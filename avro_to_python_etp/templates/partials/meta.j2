@@ -1,9 +1,9 @@
 {%- block meta %}
 
-    class Meta:
+    struct Meta{
 
         {% for name, field in file.meta_fields -%}
         {{name}}: str = {{field}}
         {% endfor %}
-
+    }
 {%- endblock %}

@@ -14,10 +14,10 @@ PRIMITIVE_TYPES = {
 PRIMITIVE_TYPE_MAP = {
     'null': 'None',
     'boolean': 'bool',
-    'int': 'int',
-    'long': 'int',
-    'float': 'float',
-    'double': 'float',
-    'bytes': 'bytes',
-    'string': 'str'
+    'int': 'i32',
+    'long': 'i64',
+    'float': 'f32',
+    'double': 'f64',
+    'bytes': 'bytes::Bytes',
+    'string': 'String'
 }

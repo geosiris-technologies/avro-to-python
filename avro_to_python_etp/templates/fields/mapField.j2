@@ -1,15 +1,14 @@
 {%- macro compute_default(field) -%}
   {%- if field.default is not none -%}
-    = Field(alias="{{field.name}}",default_factory=lambda: {{field.default}})
+    = {{field.default}}
   {%- else -%}
-    = Field(alias="{{field.name}}")
+    = HashMap::new()
   {%- endif -%}
 {% endmacro %}
-
 {%- block map %}
     {%- if field.map_type.fieldtype == 'reference' %}
-    {{compute_field_name(name)}}: typing.Mapping[str, {{field.map_type.reference_name}}] {{compute_default(field)}}
+    {{compute_field_name(name)}}: HashMap<&str, {{field.map_type.reference_name}}> {{compute_default(field)}}
     {%- elif field.map_type.fieldtype == 'primitive'%}
-    {{compute_field_name(name)}}: typing.Mapping[str, {{primitive_type_map[field.map_type.avrotype]}}] {{compute_default(field)}}
+    {{compute_field_name(name)}}: HashMap<&str, {{primitive_type_map[field.map_type.avrotype]}}> {{compute_default(field)}}
     {%- endif -%}
 {%- endblock -%}

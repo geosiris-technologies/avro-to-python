@@ -1,10 +1,10 @@
 {%- block record -%}
-
 {% set ns = namespace(optional=false) %}
-class {{file.name}}(ETPModel):
-{%- if file.fields|length == 0: -%} 
-    pass
-{% else -%}
+#[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct {{file.name}}{
+
+    {% include 'partials/avroSchema.j2' %},
 {# first the fields without defaults then the others -#}
 {%- for name, field in file.fields.items() -%}
     {%- if field.default is none: -%}
@@ -16,42 +16,7 @@ class {{file.name}}(ETPModel):
     {%- include 'fields/fieldFactory.j2' -%}
     {%- endif -%}
 {%- endfor -%}
-{% endif -%}
-
 {% if file.name == 'AnyArray' %}
-    def dict(self, *args, **kwargs) -> dict[str, object]:
-        if isinstance(self.item, ArrayOfFloat):
-            return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfFloat",{'values': self.item.values})}
-        elif isinstance(self.item, ArrayOfDouble):
-            return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfDouble",{'values': self.item.values})}
-        elif isinstance(self.item, ArrayOfInt):
-            return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfInt",{'values': self.item.values})}
-        elif isinstance(self.item, ArrayOfLong):
-            return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfLong",{'values': self.item.values})}
-        elif isinstance(self.item, ArrayOfBoolean):
-            return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfBoolean",{'values': self.item.values})}
-        elif isinstance(self.item, ArrayOfString):
-            return {"item": ("Energistics.Etp.v12.Datatypes.ArrayOfString",{'values': self.item.values})}
-        else:
-            return super().dict(*args, **kwargs)
-
-
-    @validator('item', pre=True, always=True)
-    def validate_item_type(cls, v):
-        if isinstance(v, (tuple, list)):
-            if v[0].endswith("ArrayOfBoolean"):
-                return ArrayOfBoolean.construct(values=v[1]["values"])
-            elif v[0].endswith("ArrayOfInt"):
-                return ArrayOfInt.construct(values=v[1]["values"])
-            elif v[0].endswith("ArrayOfLong"):
-                return ArrayOfLong.construct(values=v[1]["values"])
-            elif v[0].endswith("ArrayOfFloat"):
-                return ArrayOfFloat.construct(values=v[1]["values"])
-            elif v[0].endswith("ArrayOfDouble"):
-                return ArrayOfDouble.construct(values=v[1]["values"])
-            elif v[0].endswith("ArrayOfString"):
-                return ArrayOfString.construct(values=v[1]["values"])
-        return v
 {% endif %}
-
+}
 {%- endblock %}

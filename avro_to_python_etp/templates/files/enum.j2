@@ -1,13 +1,15 @@
 {%- block enum %}
-class {{file.name}}(StrEnum):    
+#[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum {{file.name}}{   
 {%- if file.default %}
-    # the first value ({{file.default}}) is the default
-    {{file.default}} = '{{file.default}}'
+    // the first value ({{file.default}}) is the default
+    {{file.default}} = String::from(r#"{{file.default}}"#)
 {% endif -%}
 {%- for symbol in  file.symbols -%}
 {%- if symbol != file.default %}
-    {{symbol|snake_case|upper}} = '{{symbol}}'
+    {{symbol|snake_case|upper}} = String::from(r#"{{symbol}}"#),
 {%- endif -%}
 {% endfor %}
-
+}
 {% endblock -%}

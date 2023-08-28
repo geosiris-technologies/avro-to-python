@@ -1,27 +1,27 @@
 {%- macro compute_default(field) -%}
   {%- if field.default is not none -%}
-    = Field(alias="{{field.name}}", default_factory=lambda: {{field.default}})
+    = Vec::new({{field.default}})
   {%- else -%}
-    = Field(alias="{{field.name}}")
+    = Vec::new()
   {%- endif -%}
 {% endmacro %}
 
 {%- block array -%}
     {%- if field.array_item_type.fieldtype == 'reference' %}
-    {{compute_field_name(name)}}: typing.List[{{field.array_item_type.reference_name}}] {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<{{field.array_item_type.reference_name}}> {{compute_default(field)}}
     {%- elif file.name.startswith('ArrayOf') and field.array_item_type.fieldtype == 'primitive' %}
-    {{compute_field_name(name)}}: typing.List[Strict[{{primitive_type_map[field.array_item_type.avrotype]}}]] {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}> {{compute_default(field)}}
     {%- elif field.array_item_type.fieldtype == 'primitive' %}
-    {{compute_field_name(name)}}: typing.List[Strict[{{primitive_type_map[field.array_item_type.avrotype]}}]] {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}> {{compute_default(field)}}
     {%- elif field.array_item_type.fieldtype == 'union' %}
     {%- if field.array_item_type.optional %}
     {%- if field.array_item_type.union_types|length > 1 %}
-    {{compute_field_name(name)}}: typing.List[typing.Optional[typing.Union[{{', '.join(get_union_types(field.array_item_type).split(','))}}]]] {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<Option<[typing.Union[{{', '.join(get_union_types(field.array_item_type).split(','))}}]>> {{compute_default(field)}}
     {%- else %}
-    {{compute_field_name(name)}}: typing.List[typing.Optional[{{', '.join(get_union_types(field.array_item_type).split(','))}}]] {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<Option<[{{', '.join(get_union_types(field.array_item_type).split(','))}}>> {{compute_default(field)}}
     {%- endif -%}
     {%- else-%}
-    {{compute_field_name(name)}}: typing.List[typing.Union[{{', '.join(get_union_types(field.array_item_type).split(','))}}]] {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<typing.Union[{{', '.join(get_union_types(field.array_item_type).split(','))}}]> {{compute_default(field)}}
     {%- endif -%}
     {%- endif -%}
 {%- endblock -%}

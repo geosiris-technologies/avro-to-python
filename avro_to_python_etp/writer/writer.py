@@ -7,7 +7,6 @@ from textwrap import TextWrapper, fill, wrap
 from jinja2 import Environment, FileSystemLoader
 
 import keyword
-import builtins
 
 from avro_to_python_etp.utils.avro.helpers import get_union_types, split_words
 from avro_to_python_etp.utils.avro.primitive_types import PRIMITIVE_TYPE_MAP
@@ -19,6 +18,8 @@ from avro_to_python_etp.utils.paths import (
 TEMPLATE_PATH = __file__.replace(get_joined_path('writer', 'writer.py'), 'templates/')
 TEMPLATE_PATH = get_system_path(TEMPLATE_PATH)
 
+RUST_RESEVED_KEYWORDS = [ "as", "use", "extern crate", "break", "const", "continue", "crate", "else", "if", "if let", "enum", "extern", "false", "fn", "for", "if", "impl", "in", "for", "let", "loop", "match", "mod", "move", "mut", "pub", "impl", "ref", "return", "Self", "self", "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where", "while", "abstract", "alignof", "become", "box", "do", "final", "macro", "offsetof", "override", "priv", "proc", "pure", "sizeof", "typeof", "unsized", "virtual", "yield"
+]
 
     
 class AvroWriter(object):
@@ -85,10 +86,12 @@ class AvroWriter(object):
         # jinja2 templates
         self.template_env = Environment(loader=FileSystemLoader(TEMPLATE_PATH))
         self.template_env.filters.update({
+            "snake_case_module": self.snake_case_module,
             "snake_case": self.snake_case,
             "compress": self.compress,
             "screaming_snake_case": self.screaming_snake_case,
             "lower_and_snake": self.lower_and_snake,
+            "lower_and_snake_module": self.lower_and_snake_module,
             "is_reserved": self.is_reserved
             })
         self.template = self.template_env.get_template('baseTemplate.j2')
@@ -96,14 +99,21 @@ class AvroWriter(object):
     def lower_and_snake(self, value: str, **kwargs: Any) -> str:
         split = value.split('.')
         return "%s" % '.'.join([self.snake_case(str(x)) for x in split])
+
+    def lower_and_snake_module(self, value: str, **kwargs: Any) -> str:
+        split = value.split('.')
+        return "%s" % '.'.join([self.snake_case(str(x)) for x in split]).replace(".", "::")
         
     def snake_case(self, value: str, **kwargs: Any) -> str:
         """Convert the given string to snake case."""
         return "_".join(map(str.lower, split_words(value)))
+        
+    def snake_case_module(self, value: str, **kwargs: Any) -> str:
+        """Convert the given string to snake case."""
+        return "_".join(map(str.lower, split_words(value))).replace(".", "::")
 
     def is_reserved(self, value: str, **kwargs: Any) -> bool:
-        builtins_list: List[str] = dir(builtins)
-        return keyword.iskeyword(value) or value in builtins_list
+        return value in RUST_RESEVED_KEYWORDS
 
     def compress(self, value: str, **kwargs:Any) -> str:
         """Compress and wraps the given string."""
@@ -139,7 +149,7 @@ class AvroWriter(object):
         if self.pip:
             self.pip_import = self.pip.replace('-', '_')
             self.pip_dir = self.root_dir + '/' + self.pip
-            self.root_dir += '/' + self.pip + '/' + self.pip.replace('-', '_')
+            self.root_dir += '/' + self.pip + '/src'  # + self.pip.replace('-', '_')
             self.pip = self.pip.replace('-', '_')
         else:
             self.pip_import = ''
@@ -149,11 +159,12 @@ class AvroWriter(object):
         self._write_dfs()
 
         if self.pip:
-            self._write_pyproject_file()
+            self._write_cargo_file()
+            self._write_lib_file()
             # self._write_setup_file()
-            self._write_pip_init_file()
+            # self._write_pip_init_file()
             # self._write_manifest_file()
-            self._write_py_typed_file()
+            # self._write_py_typed_file()
 
     def _write_manifest_file(self) -> None:
         """ writes manifest to recursively include packages """
@@ -165,10 +176,22 @@ class AvroWriter(object):
         with open(filepath, 'w') as f:
             f.write(filetext)
 
-    def _write_pyproject_file(self) -> None:
-        """ writes the pyproject.py file to the pip dir"""
-        filepath = self.pip_dir + '/pyproject.toml'
-        template = self.template_env.get_template('files/pyproject.j2')
+    def _write_cargo_file(self) -> None:
+        """ writes the cargo.toml file to the pip dir"""
+        filepath = self.pip_dir + '/Cargo.toml'
+        template = self.template_env.get_template('files/cargo.j2')
+        filetext = template.render(
+            pip=self.pip,
+            author=self.author,
+            package_version=self.package_version
+        )
+        with open(filepath, 'w') as f:
+            f.write(filetext)
+
+    def _write_lib_file(self) -> None:
+        """ writes the lib.rs file to the pip dir"""
+        filepath = self.pip_dir + '/src/lib.rs'
+        template = self.template_env.get_template('files/lib.j2')
         filetext = template.render(
             pip=self.pip,
             author=self.author,
@@ -233,6 +256,22 @@ class AvroWriter(object):
         with open(filepath, 'w') as f:
             f.write(filetext)
 
+    def _write_mod_file(self, imports: set, namespace: str) -> None:
+        """ writes __init__.py files for namespace imports"""
+        template = self.template_env.get_template('files/mod.j2')
+        filetext = template.render(
+            imports=imports,
+            pip_import=self.pip_import,
+            namespace=namespace
+        )
+        verify_or_create_namespace_path(
+            rootdir=self.root_dir,
+            namespace=namespace
+        )
+        filepath = self.root_dir + '/'+namespace.replace('.', '/') + '/' + 'mod.rs'  # NOQA
+        with open(filepath, 'w') as f:
+            f.write(filetext)
+
     def _write_file(
         self, filename: str, filetext: str, namespace: str
     ) -> None:
@@ -242,7 +281,7 @@ class AvroWriter(object):
             rootdir=self.root_dir,
             namespace=namespace
         )
-        filepath = self.root_dir + '/' + namespace.replace('.', '/') + '/' + self.snake_case(filename) + '.py'  # NOQA
+        filepath = self.root_dir + '/' + namespace.replace('.', '/') + '/' + self.snake_case(filename) + '.rs'  # NOQA
         with open(filepath, 'w') as f:
             f.write(filetext)
 
@@ -288,6 +327,9 @@ class AvroWriter(object):
                         c.file.name
                     )
                 
-                self._write_init_file(
+                # self._write_init_file(
+                #     imports=imports, namespace=namespace
+                # )
+                self._write_mod_file(
                     imports=imports, namespace=namespace
                 )

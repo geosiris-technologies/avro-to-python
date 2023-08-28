@@ -1,20 +1,17 @@
 {%- macro compute_default(field) -%}
-  = Field(alias="{{field.name}}" 
   {%- if field.default is not none -%}
-      , default=
+    =
     {%- if field.default == "" -%}
-      ""
+      String::from("")
       {%- else -%}
         {%- if field.avrotype == "string" -%}
-           "{{field.default}}"
+           String::from("{{field.default}}")
         {%- else -%}
            {{field.default}}
         {%- endif -%}
       {%- endif -%}
   {%- endif -%}
-  )
 {%- endmacro %}
-
 {%- block primitive %}
     {{compute_field_name(name)}}: {{primitive_type_map[field.avrotype]}} {{compute_default(field)}}
 {%- endblock -%}
