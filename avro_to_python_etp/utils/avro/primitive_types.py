@@ -18,6 +18,7 @@ PRIMITIVE_TYPE_MAP = {
     'long': 'i64',
     'float': 'f32',
     'double': 'f64',
-    'bytes': 'bytes::Bytes',
+    # 'bytes': 'bytes::Bytes',
+    'bytes': 'Vec<u8>',
     'string': 'String'
 }

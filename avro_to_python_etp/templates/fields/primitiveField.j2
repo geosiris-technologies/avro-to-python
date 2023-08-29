@@ -1,17 +1,1 @@
-{%- macro compute_default(field) -%}
-  {%- if field.default is not none -%}
-    {%- if field.default == "" -%}
-        #[derivative(Default(value = String::from("") ))]
-    {%- else -%}
-        {%- if field.avrotype == "string" -%}
-            #[derivative(Default(value = String::from("{{field.default}}") ))]
-        {%- else -%}
-           #[derivative(Default(value = {{field.default}} ))]
-        {%- endif -%}
-      {%- endif -%}
-  {%- endif -%}
-{%- endmacro %}
-{%- block primitive %}
-    {{compute_default(field)}}
-    {{compute_field_name(name)}}: {{primitive_type_map[field.avrotype]}}
-{%- endblock -%}
+{{primitive_type_map[field.avrotype]}}

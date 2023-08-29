@@ -1,13 +1,50 @@
+{%- macro compute_default(field) -%}
+{%- if field.fieldtype == 'reference' -%}
+{%- elif field.fieldtype == 'primitive' -%}
+	{%- if field.default is not none -%}
+    {%- if field.default == "" -%}
+        #[derivative(Default(value = String::from("") ))]
+    {%- else -%}
+        {%- if field.avrotype == "string" -%}
+            #[derivative(Default(value = String::from("{{field.default}}") ))]
+        {%- else -%}
+           #[derivative(Default(value = {{field.default}} ))]
+        {%- endif -%}
+      {%- endif -%}
+  {%- endif -%}
+{%- elif field.fieldtype == 'array' -%}
+  {%- if field.default is not none -%}
+    #[derivative(Default(value = "Vec::new({{field.default}})" ))]
+  {%- else %}
+    #[derivative(Default(value = "Vec::new()" ))]
+  {%- endif -%}
+{%- elif field.fieldtype == 'union' -%}
+{%- elif field.fieldtype == 'map' -%}
+  {%- if field.default is not none -%}
+    #[derivative(Default(value = "{{field.default}}" ))]
+  {%- else -%}
+    #[derivative(Default(value = "HashMap::new()" ))]
+  {%- endif -%}
+{%- endif -%}
+{%- endmacro -%}
+{#-  -#}
+{#-  -#}
+{#-  -#}
 {%- macro compute_field_name(name) -%}
 {%- if name|snake_case|is_reserved -%}
 pub {{name|snake_case ~ '_ '}}
 {%- else -%}
 pub {{name|snake_case}}
 {%- endif -%}
-{% endmacro %}
+{% endmacro -%}
+{#-  -#}
+{#-  -#}
+{#-  -#}
+{# {%- if field.reference_name == 'Uuid' -%}  #[serde(with = "serde_bytes")]  {% endif -%} #}
 {% block field_factory %}
 	#[serde(rename = "{{name}}")]
-    {# #}
+    {{compute_default(field)}}
+    {{compute_field_name(name)}}:
 {%- if field.fieldtype == 'reference' -%}
 {%- include 'fields/referenceField.j2' -%},
 {%- elif field.fieldtype == 'primitive' -%}

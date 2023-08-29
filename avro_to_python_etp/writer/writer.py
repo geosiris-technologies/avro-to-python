@@ -340,10 +340,3 @@ class AvroWriter(object):
                     imports.add(
                         c.file.name
                     )
-                
-                # self._write_init_file(
-                #     imports=imports, namespace=namespace
-                # )
-                # self._write_mod_file(
-                #     imports=imports, namespace=namespace
-                # )

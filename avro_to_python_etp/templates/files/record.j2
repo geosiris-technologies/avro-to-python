@@ -8,7 +8,7 @@
         {%- endif -%}
     {%- elif field.fieldtype == 'union' -%}
         {%- if field.union_types|length > 1  -%}
-#[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum {{get_union_types_enum_name(get_union_types(field, True, None))}}  {
     {# #}
@@ -24,7 +24,7 @@ pub enum {{get_union_types_enum_name(get_union_types(field, True, None))}}  {
 {%- endfor -%}
 
 {# #}
-#[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize, serde::Serialize, Derivative)]
+#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize, Derivative)]
 #[serde(rename_all = "camelCase")]
 pub struct {{file.name}}{
 {%- for name, field in file.fields.items() -%}

@@ -1,28 +1,17 @@
-{%- macro compute_default(field) -%}
-  {%- if field.default is not none -%}
-    #[derivative(Default(value = Vec::new({{field.default}}) ))]
-  {%- else -%}
-    #[derivative(Default(value = Vec::new() ))]
-  {%- endif -%}
-{% endmacro %}
-
-{%- block array -%}
-    {{compute_default(field)}}
-    {%- if field.array_item_type.fieldtype == 'reference' %}
-    {{compute_field_name(name)}}: Vec<{{field.array_item_type.reference_name}}>
-    {%- elif file.name.startswith('ArrayOf') and field.array_item_type.fieldtype == 'primitive' %}
-    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
-    {%- elif field.array_item_type.fieldtype == 'primitive' %}
-    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
-    {%- elif field.array_item_type.fieldtype == 'union' %}
-      {%- if field.array_item_type.optional %}
-        {%- if field.array_item_type.union_types|length > 1 %}
-        {{compute_field_name(name)}}: Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>
-        {%- else %}
-        {{compute_field_name(name)}}: Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>
-        {%- endif -%}
-      {%- else-%}
-      {{compute_field_name(name)}}: Vec<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>
-      {%- endif -%}
+{%- if field.array_item_type.fieldtype == 'reference' -%}
+Vec<{{field.array_item_type.reference_name}}>
+{%- elif file.name.startswith('ArrayOf') and field.array_item_type.fieldtype == 'primitive' -%}
+Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
+{%- elif field.array_item_type.fieldtype == 'primitive' -%}
+Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
+{%- elif field.array_item_type.fieldtype == 'union' -%}
+  {%- if field.array_item_type.optional %}
+    {%- if field.array_item_type.union_types|length > 1 %}
+    Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>
+    {%- else -%}
+    Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>
     {%- endif -%}
-{%- endblock -%}
+  {%- else-%}
+  Vec<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>
+  {%- endif -%}
+{%- endif -%}

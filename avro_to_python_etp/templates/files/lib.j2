@@ -1,8 +1,10 @@
+use crate::energistics::etp::v12::datatypes::array_of_long::ArrayOfLong;
+
 pub mod energistics;
 
 
 fn main() {
     println!("Hello, world!");
 
-    let a = energistics::etp::v12::ArrayOfLong(values=Vec::new());
+    let a = ArrayOfLong{values:Vec::new()};
 }

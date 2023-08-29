@@ -64,12 +64,41 @@ def pascal_case(value: str) -> str:
     return "".join(map(lambda w : w[0].upper() + w[1:], value.split("_")))
 
 def get_union_types_enum_name(union_types: str):
-    return "Union" + ''.join(map(pascal_case, union_types.split(',')))
+    print("========== > ")
+    print("========== > ")
+    print("========== > ")
+    union_array = list(union_types.split(','));
+    print(union_array)
+    if len(union_array) == 1:
+        return PRIMITIVE_TYPE_MAP.get(union_array[0], union_array[0])
+    elif len(union_array) == 2 and (union_array[0].lower() == "null" or union_array[1].lower() == "null"):
+        if union_array[0].lower() == "null":
+            return PRIMITIVE_TYPE_MAP.get(union_array[1], union_array[1])
+        else:
+            return PRIMITIVE_TYPE_MAP.get(union_array[0], union_array[0])
+    else:
+        return "Union" + ''.join(map(pascal_case, union_array))
+
+def get_type(obj, primitive_type_map: dict=PRIMITIVE_TYPE_MAP):
+    # primitive type
+    if obj.fieldtype == 'primitive':
+        if primitive_type_map is not None:
+            return primitive_type_map.get(obj.avrotype)
+        else:
+            return obj.avrotype
+    # reference to a named type
+    elif obj.fieldtype == 'reference':
+        return obj.reference_name
+
+    elif obj.fieldtype == 'array':
+        return 'list'
+    else:
+        raise ValueError('unsupported type')
 
 def get_union_types(
     field: Field,
     use_strict: bool = True,
-    PRIMITIVE_TYPE_MAP: dict=PRIMITIVE_TYPE_MAP
+    primitive_type_map: dict=PRIMITIVE_TYPE_MAP
 ) -> str:
     """ Takes a field object and returns the types of the fields
 
@@ -89,24 +118,24 @@ def get_union_types(
     out_types = []
 
     for obj in field.union_types:
+        out_types.append(get_type(obj, primitive_type_map))
+        # # primitive type
+        # if obj.fieldtype == 'primitive':
+        #     if PRIMITIVE_TYPE_MAP is not None:
+        #         out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
+        #     else:
+        #         out_types.append(obj.avrotype)
 
-        # primitive type
-        if obj.fieldtype == 'primitive':
-            if PRIMITIVE_TYPE_MAP is not None:
-                out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
-            else:
-                out_types.append(obj.avrotype)
 
+        # # reference to a named type
+        # elif obj.fieldtype == 'reference':
+        #     out_types.append(obj.reference_name)
 
-        # reference to a named type
-        elif obj.fieldtype == 'reference':
-            out_types.append(obj.reference_name)
+        # elif obj.fieldtype == 'array':
+        #     out_types.append('list')
 
-        elif obj.fieldtype == 'array':
-            out_types.append('list')
-
-        else:
-            raise ValueError('unsupported type')
+        # else:
+        #     raise ValueError('unsupported type')
 
     return ','.join(out_types)
 
