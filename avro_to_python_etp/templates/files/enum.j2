@@ -32,9 +32,9 @@ impl fmt::Display for {{file.name}}{
                 {%- if symbol != file.default %}
                 {#  #}
                 {%- if symbol|snake_case|is_reserved -%}
-                {{symbol|snake_case ~ '_ '}}
+                {{file.name}}::{{symbol|snake_case ~ '_ '}}
                 {%- else -%}
-                {{symbol|snake_case ~ ' '}}
+                {{file.name}}::{{symbol|snake_case ~ ' '}}
                 {%- endif -%}
                 => "{{symbol}}",
                 {%- endif -%}
