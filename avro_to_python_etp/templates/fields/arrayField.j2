@@ -1,27 +1,28 @@
 {%- macro compute_default(field) -%}
   {%- if field.default is not none -%}
-    = Vec::new({{field.default}})
+    #[derivative(Default(value = Vec::new({{field.default}}) ))]
   {%- else -%}
-    = Vec::new()
+    #[derivative(Default(value = Vec::new() ))]
   {%- endif -%}
 {% endmacro %}
 
 {%- block array -%}
+    {{compute_default(field)}}
     {%- if field.array_item_type.fieldtype == 'reference' %}
-    {{compute_field_name(name)}}: Vec<{{field.array_item_type.reference_name}}> {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<{{field.array_item_type.reference_name}}>
     {%- elif file.name.startswith('ArrayOf') and field.array_item_type.fieldtype == 'primitive' %}
-    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}> {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
     {%- elif field.array_item_type.fieldtype == 'primitive' %}
-    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}> {{compute_default(field)}}
+    {{compute_field_name(name)}}: Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
     {%- elif field.array_item_type.fieldtype == 'union' %}
-    {%- if field.array_item_type.optional %}
-    {%- if field.array_item_type.union_types|length > 1 %}
-    {{compute_field_name(name)}}: Vec<Option<[typing.Union[{{', '.join(get_union_types(field.array_item_type).split(','))}}]>> {{compute_default(field)}}
-    {%- else %}
-    {{compute_field_name(name)}}: Vec<Option<[{{', '.join(get_union_types(field.array_item_type).split(','))}}>> {{compute_default(field)}}
-    {%- endif -%}
-    {%- else-%}
-    {{compute_field_name(name)}}: Vec<typing.Union[{{', '.join(get_union_types(field.array_item_type).split(','))}}]> {{compute_default(field)}}
-    {%- endif -%}
+      {%- if field.array_item_type.optional %}
+        {%- if field.array_item_type.union_types|length > 1 %}
+        {{compute_field_name(name)}}: Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>
+        {%- else %}
+        {{compute_field_name(name)}}: Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>
+        {%- endif -%}
+      {%- else-%}
+      {{compute_field_name(name)}}: Vec<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>
+      {%- endif -%}
     {%- endif -%}
 {%- endblock -%}

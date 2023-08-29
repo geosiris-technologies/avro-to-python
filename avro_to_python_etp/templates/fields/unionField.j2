@@ -2,11 +2,11 @@
     {%- if field.optional -%}
     {% set ns.optional = True %}
     {%- if field.union_types|length > 1 %}
-    {{compute_field_name(name)}}: Option<typing.Union[{{', '.join(get_union_types(field, True).split(','))}}]>
+    {{compute_field_name(name)}}: Option<{{get_union_types_enum_name(get_union_types(field, True, None))}}>
     {%- else %}
-    {{compute_field_name(name)}}: Option<{{', '.join(get_union_types(field).split(','))}}>
+    {{compute_field_name(name)}}: Option<{{get_union_types_enum_name(get_union_types(field, True, None))}}>
     {%- endif %} 
     {%- else %}
-    {{compute_field_name(name)}}: typing.Union<{{', '.join(get_union_types(field, True).split(','))}}>
+    {{compute_field_name(name)}}: {{get_union_types_enum_name(get_union_types(field, True, None))}}>
     {%- endif -%} 
 {%- endblock -%}

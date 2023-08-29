@@ -7,6 +7,7 @@ pub {{name|snake_case}}
 {% endmacro %}
 {% block field_factory %}
 	#[serde(rename = "{{name}}")]
+    {# #}
 {%- if field.fieldtype == 'reference' -%}
 {%- include 'fields/referenceField.j2' -%},
 {%- elif field.fieldtype == 'primitive' -%}

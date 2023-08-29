@@ -2,7 +2,7 @@
 {%- if file.imports %}
 {% for imp in file.imports %}    
 // from {{pip_import}}.{{imp.namespace|lower_and_snake}}.{{imp.name|snake_case}} import {{imp.name}} 
-use {{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{{imp.name}};
+use crate::{{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{{imp.name}};
 {% endfor %}
 {%- endif -%}
 {% endblock %}

@@ -1,5 +1,8 @@
 {%- macro get_json_schema(schema) -%}
-	pub avro_schema: String = String::from(r#"{{ json.dumps(schema) }}"#)
+	#[inline]
+	pub fn avro_schema() -> String {
+		String::from(r#"{{ json.dumps(schema) }}"#)
+	} 
 {%- endmacro -%}
 {%- block schema -%}
 	{{get_json_schema(file.expanded_schema)}}

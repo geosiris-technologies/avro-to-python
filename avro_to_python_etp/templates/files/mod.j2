@@ -1,6 +1,9 @@
-// init file for file imports at {{namespace}} level
-pub use crate::{{namespace}};
+{# // init file for file imports at {{namespace}} level #}
+{# pub use crate::{{namespace}};
 {%- for file in imports %}
 pub use {{pip_import}}::{{file}}::{{file.name}};
 pub use {{pip_import}}::{{namespace}}.{{file|snake_case_module}}::{{file}};
+{% endfor %} #}
+{%- for module in sub_modules -%}
+    pub mod {{module}};
 {% endfor %}

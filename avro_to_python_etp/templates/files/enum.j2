@@ -1,15 +1,33 @@
 {%- block enum %}
+use std::fmt;
+
 #[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum {{file.name}}{   
 {%- if file.default %}
     // the first value ({{file.default}}) is the default
-    {{file.default}} = String::from(r#"{{file.default}}"#)
+    {{file.default}} {# = String::from(r#"{{file.default}}"#) #}
 {% endif -%}
 {%- for symbol in  file.symbols -%}
 {%- if symbol != file.default %}
-    {{symbol|snake_case|upper}} = String::from(r#"{{symbol}}"#),
+    {{symbol|pascal_case}}{# = String::from(r#"{{symbol}}"#) #},
 {%- endif -%}
 {% endfor %}
+}
+
+impl fmt::Display for {{file.name}}{
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+            {%- for symbol in  file.symbols -%}
+                {%- if symbol != file.default %}
+                    Self::{{symbol|pascal_case}} => "{{symbol}}",
+                {%- endif -%}
+            {% endfor %}
+            }
+        )
+    }
 }
 {% endblock -%}

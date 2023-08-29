@@ -1,14 +1,15 @@
 {%- macro compute_default(field) -%}
   {%- if field.default is not none -%}
-    = {{field.default}}
+    #[derivative(Default(value = {{field.default}} ))]
   {%- else -%}
-    = HashMap::new()
+    #[derivative(Default(value = HashMap::new() ))]
   {%- endif -%}
 {% endmacro %}
 {%- block map %}
+    {{compute_default(field)}}
     {%- if field.map_type.fieldtype == 'reference' %}
-    {{compute_field_name(name)}}: HashMap<&str, {{field.map_type.reference_name}}> {{compute_default(field)}}
+    {{compute_field_name(name)}}: HashMap<&str, {{field.map_type.reference_name}}>
     {%- elif field.map_type.fieldtype == 'primitive'%}
-    {{compute_field_name(name)}}: HashMap<&str, {{primitive_type_map[field.map_type.avrotype]}}> {{compute_default(field)}}
+    {{compute_field_name(name)}}: HashMap<&str, {{primitive_type_map[field.map_type.avrotype]}}>
     {%- endif -%}
 {%- endblock -%}

@@ -1,4 +1,5 @@
 """ Writer class for writing python avro files """
+import os 
 
 import json
 from typing import Any, List
@@ -8,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 import keyword
 
-from avro_to_python_etp.utils.avro.helpers import get_union_types, split_words
+from avro_to_python_etp.utils.avro.helpers import get_union_types, split_words, get_union_types_enum_name
 from avro_to_python_etp.utils.avro.primitive_types import PRIMITIVE_TYPE_MAP
 from avro_to_python_etp.utils.paths import (
     get_system_path, verify_or_create_namespace_path, get_or_create_path,
@@ -86,6 +87,7 @@ class AvroWriter(object):
         # jinja2 templates
         self.template_env = Environment(loader=FileSystemLoader(TEMPLATE_PATH))
         self.template_env.filters.update({
+            "pascal_case": self.pascal_case,
             "snake_case_module": self.snake_case_module,
             "snake_case": self.snake_case,
             "compress": self.compress,
@@ -114,6 +116,9 @@ class AvroWriter(object):
 
     def is_reserved(self, value: str, **kwargs: Any) -> bool:
         return value in RUST_RESEVED_KEYWORDS
+
+    def pascal_case(self, value: str, **kwargs: Any) -> str:
+        return "".join(map(lambda w : w[0].upper() + w[1:], value.split("_")))
 
     def compress(self, value: str, **kwargs:Any) -> str:
         """Compress and wraps the given string."""
@@ -165,6 +170,20 @@ class AvroWriter(object):
             # self._write_pip_init_file()
             # self._write_manifest_file()
             # self._write_py_typed_file()
+
+        self.gen_mods_files()
+
+
+    def gen_mods_files(self):
+
+        for path, dirs, files in os.walk(self.root_dir):
+            # print(f"DIRS : {dirs} -- {path} __ {files}\n")
+            if "src" not in dirs:
+                if len(dirs) > 0 or len(files) > 0:
+                    self._write_mod_file(file_path = path + ".rs",
+                                         sub_modules = list(dict.fromkeys(dirs + list(map(lambda x: x.replace(".rs", "") , list(filter(lambda x: x.endswith(".rs"), files)) )) ))
+                                        )
+
 
     def _write_manifest_file(self) -> None:
         """ writes manifest to recursively include packages """
@@ -256,20 +275,13 @@ class AvroWriter(object):
         with open(filepath, 'w') as f:
             f.write(filetext)
 
-    def _write_mod_file(self, imports: set, namespace: str) -> None:
+    def _write_mod_file(self, sub_modules: list, file_path) -> None:
         """ writes __init__.py files for namespace imports"""
         template = self.template_env.get_template('files/mod.j2')
         filetext = template.render(
-            imports=imports,
-            pip_import=self.pip_import,
-            namespace=namespace
+            sub_modules=sub_modules,
         )
-        verify_or_create_namespace_path(
-            rootdir=self.root_dir,
-            namespace=namespace
-        )
-        filepath = self.root_dir + '/'+namespace.replace('.', '/') + '/' + 'mod.rs'  # NOQA
-        with open(filepath, 'w') as f:
+        with open(file_path, 'w') as f:
             f.write(filetext)
 
     def _write_file(
@@ -302,6 +314,8 @@ class AvroWriter(object):
             file=file,
             primitive_type_map=PRIMITIVE_TYPE_MAP,
             get_union_types=get_union_types,
+            get_union_types_enum_name=get_union_types_enum_name,
+            pascal_case=lambda w: self.pascal_case(w),
             json=json,
             pip_import=self.pip_import,
             enumerate=enumerate
@@ -330,6 +344,6 @@ class AvroWriter(object):
                 # self._write_init_file(
                 #     imports=imports, namespace=namespace
                 # )
-                self._write_mod_file(
-                    imports=imports, namespace=namespace
-                )
+                # self._write_mod_file(
+                #     imports=imports, namespace=namespace
+                # )

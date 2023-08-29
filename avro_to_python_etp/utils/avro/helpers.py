@@ -60,6 +60,11 @@ def _get_namespace(obj: dict, parent_namespace: str=None) -> None:
     else:
         return ''
 
+def pascal_case(value: str) -> str:
+    return "".join(map(lambda w : w[0].upper() + w[1:], value.split("_")))
+
+def get_union_types_enum_name(union_types: str):
+    return "Union" + ''.join(map(pascal_case, union_types.split(',')))
 
 def get_union_types(
     field: Field,
@@ -87,7 +92,11 @@ def get_union_types(
 
         # primitive type
         if obj.fieldtype == 'primitive':
-            out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
+            if PRIMITIVE_TYPE_MAP is not None:
+                out_types.append(PRIMITIVE_TYPE_MAP.get(obj.avrotype))
+            else:
+                out_types.append(obj.avrotype)
+
 
         # reference to a named type
         elif obj.fieldtype == 'reference':

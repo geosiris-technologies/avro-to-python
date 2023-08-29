@@ -1,22 +1,42 @@
 {%- block record -%}
 {% set ns = namespace(optional=false) %}
+
+{%- for name, field in file.fields.items() -%}
+    {%- if field.fieldtype == 'array'-%}
+        {%- if field.array_item_type.fieldtype == 'union' -%}
+        // {{get_union_types(field.array_item_type, None).split(',')}}
+        {%- endif -%}
+    {%- elif field.fieldtype == 'union' -%}
+        {%- if field.union_types|length > 1  -%}
 #[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct {{file.name}}{
+pub enum {{get_union_types_enum_name(get_union_types(field, True, None))}}  {
+    {# #}
+            {%- for u_type in get_union_types(field, True, None).split(',') -%}
+    {{ u_type | pascal_case }}({{primitive_type_map.get(u_type, u_type)}}),
+    {# #}
+            {%- endfor -%}
+{# #}
+}
+{# #}
+        {%- endif -%}
+    {%- endif -%}
+{%- endfor -%}
 
-    {% include 'partials/avroSchema.j2' %},
-{# first the fields without defaults then the others -#}
+{# #}
+#[derive(Debug, PartialEq, Eq, Clone, serde::Deserialize, serde::Serialize, Derivative)]
+#[serde(rename_all = "camelCase")]
+pub struct {{file.name}}{
 {%- for name, field in file.fields.items() -%}
     {%- if field.default is none: -%}
     {%- include 'fields/fieldFactory.j2' -%}
     {%- endif -%}
 {%- endfor -%}
-{%- for name, field in file.fields.items() -%}
-    {%- if field.default is not none: -%}
-    {%- include 'fields/fieldFactory.j2' -%}
-    {%- endif -%}
-{%- endfor -%}
 {% if file.name == 'AnyArray' %}
 {% endif %}
+}
+
+impl {{file.name}} {
+    {% include 'partials/avroSchema.j2' %}
 }
 {%- endblock %}
