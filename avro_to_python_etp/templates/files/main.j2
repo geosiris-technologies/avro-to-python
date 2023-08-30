@@ -1,3 +1,4 @@
+use etptypes::energistics::etp::v12::datatypes::protocol::Protocol;
 use std::time::{SystemTime};
 use std::collections::HashMap;
 use etptypes::energistics::etp::v12::datatypes::supported_protocol::SupportedProtocol;
@@ -13,7 +14,7 @@ use etptypes::error::*;
 fn main() {
     let protocols = vec![
     SupportedProtocol{
-        protocol: 0,
+        protocol: Protocol::core as i32,
         protocol_version: ETP12VERSION,
         role: "Server".to_string(),
         protocol_capabilities: HashMap::new()
@@ -50,4 +51,6 @@ fn main() {
 
     println!("{:?}", rq);
     println!("{:?}", einvalid_messagetype());
+    println!("{:?}", Protocol::core);
+    println!("{:?}", RequestSession::default());
 }

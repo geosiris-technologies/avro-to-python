@@ -5,7 +5,7 @@
 		use uuid::{uuid, Uuid};
 	{%- else -%}
 		use crate::{{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{{imp.name}};
-	{%- endif -%}
+	{%- endif %}
 {% endfor -%}
 {%- endif -%}
 {% endblock %}

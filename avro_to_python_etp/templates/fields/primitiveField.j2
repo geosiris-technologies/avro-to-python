@@ -1,1 +1,3 @@
+{%- if field.fieldtype == 'primitive' -%}
 {{primitive_type_map[field.avrotype]}}
+{%- endif -%}

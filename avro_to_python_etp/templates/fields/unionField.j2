@@ -1,12 +1,16 @@
+{%- if field.fieldtype == 'union' -%}
 {%- block union -%}
     {%- if field.optional -%}
-    {% set ns.optional = True %}
-    {%- if field.union_types|length > 1 -%}
-    Option<{{get_union_types_enum_name(get_union_types(field, True, None))}}>
-    {%- else -%}
-    Option<{{get_union_types_enum_name(get_union_types(field, True, None))}}>
-    {%- endif -%} 
+        Option<
+        {# {% set ns.optional = True %} #}
+        {%- if field.union_types|length > 1 -%}
+        {{get_union_types_enum_name(get_union_types(field, True, None))}}
+        {%- else -%}
+        {{get_union_types_enum_name(get_union_types(field, True, None))}}
+        {%- endif -%}
+        >
     {%- else -%}
     {{get_union_types_enum_name(get_union_types(field, True, None))}}
-    {%- endif -%} 
+    {%- endif -%}
 {%- endblock -%}
+{%- endif -%}

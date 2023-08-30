@@ -1,3 +1,4 @@
+{%- if field.fieldtype == 'map' -%}
 {%- block map -%}
     HashMap<String, {% set field = field.map_type -%}
 {%- if field.fieldtype == 'reference' -%}
@@ -21,3 +22,4 @@
     {%- else%}
     {{compute_field_name(name)}}: HashMap<&str, {{primitive_type_map[field.reference_name]}}>
     {%- endif -%} -#}
+{%- endif -%}

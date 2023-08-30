@@ -9,14 +9,18 @@ pub enum {{file.name}}{
     // the first value ({{file.default}}) is the default
     {{file.default}} {# = String::from(r#"{{file.default}}"#) #}
 {% endif -%}
-{%- for symbol in  file.symbols -%}
+{%- for symbol in file.symbols -%}
 {%- if symbol != file.default %}
     {#  #}
     {%- if symbol|snake_case|is_reserved -%}
-    {{symbol|snake_case ~ '_ '}},
+    {{symbol|snake_case ~ '_ '}}
     {%- else -%}
-    {{symbol|snake_case}},
+    {{symbol|snake_case}}
     {%- endif -%}
+    {%- if file.name == "Protocol" -%}
+        ={{loop.index0}}
+    {%- endif -%}
+    ,
 {%- endif -%}
 {% endfor %}
 {% endblock -%}

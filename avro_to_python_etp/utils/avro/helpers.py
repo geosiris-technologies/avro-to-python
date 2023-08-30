@@ -64,11 +64,7 @@ def pascal_case(value: str) -> str:
     return "".join(map(lambda w : w[0].upper() + w[1:], value.split("_")))
 
 def get_union_types_enum_name(union_types: str):
-    print("========== > ")
-    print("========== > ")
-    print("========== > ")
     union_array = list(union_types.split(','));
-    print(union_array)
     if len(union_array) == 1:
         return PRIMITIVE_TYPE_MAP.get(union_array[0], union_array[0])
     elif len(union_array) == 2 and (union_array[0].lower() == "null" or union_array[1].lower() == "null"):

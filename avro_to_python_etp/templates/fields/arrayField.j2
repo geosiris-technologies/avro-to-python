@@ -1,7 +1,8 @@
+{%- if field.fieldtype == 'array' -%}
 {%- if field.array_item_type.fieldtype == 'reference' -%}
 Vec<{{field.array_item_type.reference_name}}>
-{%- elif file.name.startswith('ArrayOf') and field.array_item_type.fieldtype == 'primitive' -%}
-Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
+{#- {%- elif file.name.startswith('ArrayOf') and field.array_item_type.fieldtype == 'primitive' -%}
+Vec<{{primitive_type_map[field.array_item_type.avrotype]}}> #}
 {%- elif field.array_item_type.fieldtype == 'primitive' -%}
 Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
 {%- elif field.array_item_type.fieldtype == 'union' -%}
@@ -14,4 +15,5 @@ Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
   {%- else-%}
   Vec<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>
   {%- endif -%}
+{%- endif -%}
 {%- endif -%}

@@ -1,5 +1,6 @@
 """ Writer class for writing python avro files """
 import os 
+import re 
 
 import json
 from typing import Any, List
@@ -19,8 +20,13 @@ from avro_to_python_etp.utils.paths import (
 TEMPLATE_PATH = __file__.replace(get_joined_path('writer', 'writer.py'), 'templates/')
 TEMPLATE_PATH = get_system_path(TEMPLATE_PATH)
 
-RUST_RESEVED_KEYWORDS = [ "as", "use", "extern crate", "break", "const", "continue", "crate", "else", "if", "if let", "enum", "extern", "false", "fn", "for", "if", "impl", "in", "for", "let", "loop", "match", "mod", "move", "mut", "pub", "impl", "ref", "return", "Self", "self", "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where", "while", "abstract", "alignof", "become", "box", "do", "final", "macro", "offsetof", "override", "priv", "proc", "pure", "sizeof", "typeof", "unsized", "virtual", "yield"
+RUST_RESEVED_KEYWORDS = [ "as", "use", "extern crate", "break", "const", "continue", "crate", "else", "if", "if let", "enum", "extern", "false", "fn", "for", "if", "impl", "in", "for", "let", "loop", "match", "mod", "move", "mut", "pub", "impl", "ref", "return", "Self", "self", "sel+f", "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where", "while", "abstract", "alignof", "become", "box", "do", "final", "macro", "offsetof", "override", "priv", "proc", "pure", "sizeof", "typeof", "unsized", "virtual", "yield"
 ]
+
+def rgx_sub(pattern: str, repl: str, value: str) -> str:
+    print("REGEX")
+    print(pattern, repl, value)
+    return re.sub(pattern, repl, str(value))
 
     
 class AvroWriter(object):
@@ -169,6 +175,7 @@ class AvroWriter(object):
         self._write_lib_file()
         self._write_helper_file()
         self._write_error_file()
+        self._write_default_protocols_file()
         
         if self.pip:
             self._write_cargo_file()
@@ -181,7 +188,7 @@ class AvroWriter(object):
 
         for path, dirs, files in os.walk(self.root_dir):
             # print(f"DIRS : {dirs} -- {path} __ {files}\n")
-            if "src" not in dirs:
+            if not path.endswith("/src"):
                 if len(dirs) > 0 or len(files) > 0:
                     self._write_mod_file(file_path = path + ".rs",
                                          sub_modules = list(dict.fromkeys(dirs + list(map(lambda x: x.replace(".rs", "") , list(filter(lambda x: x.endswith(".rs"), files)) )) ))
@@ -213,7 +220,7 @@ class AvroWriter(object):
             f.write(filetext)
 
     def _test_main_file(self) -> None:
-        """ writes the lib.rs file to the pip dir"""
+        """ writes the main.rs file to the pip dir"""
         filepath = self.pip_dir + '/src/main.rs'
         template = self.template_env.get_template('files/main.j2')
         filetext = template.render(
@@ -233,26 +240,45 @@ class AvroWriter(object):
             f.write(filetext)
 
     def _write_error_file(self) -> None:
-        """ writes the helper file to the root dir """
+        """ writes the error file to the root dir """
         filepath = self.pip_dir + '/src/error.rs'
         template = self.template_env.get_template('files/error.j2')
         filetext = template.render()
         with open(filepath, 'w') as f:
             f.write(filetext)
 
-    def _write_init_file(self, imports: set, namespace: str) -> None:
-        """ writes __init__.py files for namespace imports"""
-        template = self.template_env.get_template('files/init.j2')
+    def _write_default_protocols_file(self) -> None:
+        """ writes the default_protocol.rs file to the root dir """
+        filepath = self.pip_dir + '/src/default_protocols.rs'
+        template = self.template_env.get_template('files/default_protocols.j2')
+
+        # Search protocol :
+        protocols = []
+        for node in LevelOrderIter(self.tree, filter_=lambda n: not n.is_leaf):
+            imports = set()
+            path = [str(n.name) for n in node.path]
+            namespace = "%s" % '.'.join([self.snake_case(str(x)) for x in path])
+            
+            for c in node.children:
+                if c.is_leaf:
+                    f = c.file
+                    if "protocol" in f.schema:
+                        print(f)
+                        protocols.append(f)
+
+        protocols.sort(key=lambda r : (int(r.schema["protocol"]), int(r.schema["messageType"])))
+
         filetext = template.render(
-            imports=imports,
+            protocols=protocols,
+            primitive_type_map=PRIMITIVE_TYPE_MAP,
+            get_union_types=get_union_types,
+            get_union_types_enum_name=get_union_types_enum_name,
+            pascal_case=lambda w: self.pascal_case(w),
+            rgx_sub=rgx_sub,
+            json=json,
             pip_import=self.pip_import,
-            namespace=namespace
+            enumerate=enumerate,
         )
-        verify_or_create_namespace_path(
-            rootdir=self.root_dir,
-            namespace=namespace
-        )
-        filepath = self.root_dir + '/'+namespace.replace('.', '/') + '/' + '__init__.py'  # NOQA
         with open(filepath, 'w') as f:
             f.write(filetext)
 
