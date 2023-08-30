@@ -234,6 +234,9 @@ def safe_snake(string: str, default: str = "value") -> str:
     if not string:
         return default
 
+    if not isinstance(string, str):
+        string = str(string)
+
     if re.match(r"^-\d*\.?\d+$", string):
         return f"{default}_minus_{string}"
 

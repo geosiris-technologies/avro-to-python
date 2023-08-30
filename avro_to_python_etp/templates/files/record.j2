@@ -28,9 +28,7 @@ pub enum {{get_union_types_enum_name(get_union_types(field, True, None))}}  {
 #[serde(rename_all = "camelCase")]
 pub struct {{file.name}}{
 {%- for name, field in file.fields.items() -%}
-    {%- if field.default is none: -%}
     {%- include 'fields/fieldFactory.j2' -%}
-    {%- endif -%}
 {%- endfor -%}
 {% if file.name == 'AnyArray' %}
 {% endif %}

@@ -108,6 +108,10 @@ class AvroWriter(object):
         
     def snake_case(self, value: str, **kwargs: Any) -> str:
         """Convert the given string to snake case."""
+
+        if not isinstance(value, str):
+            value = str(value)
+
         return "_".join(map(str.lower, split_words(value)))
         
     def snake_case_module(self, value: str, **kwargs: Any) -> str:
@@ -159,17 +163,16 @@ class AvroWriter(object):
         else:
             self.pip_import = ''
         get_or_create_path(self.root_dir)
-        # self._write_helper_file()
 
         self._write_dfs()
 
+        self._write_lib_file()
+        self._write_helper_file()
+        self._write_error_file()
+        
         if self.pip:
             self._write_cargo_file()
-            self._write_lib_file()
-            # self._write_setup_file()
-            # self._write_pip_init_file()
-            # self._write_manifest_file()
-            # self._write_py_typed_file()
+            self._test_main_file()
 
         self.gen_mods_files()
 
@@ -184,16 +187,6 @@ class AvroWriter(object):
                                          sub_modules = list(dict.fromkeys(dirs + list(map(lambda x: x.replace(".rs", "") , list(filter(lambda x: x.endswith(".rs"), files)) )) ))
                                         )
 
-
-    def _write_manifest_file(self) -> None:
-        """ writes manifest to recursively include packages """
-        filepath = self.pip_dir + '/MANIFEST.in'
-        template = self.template_env.get_template('files/manifest.j2')
-        filetext = template.render(
-            pip = self.pip
-        )
-        with open(filepath, 'w') as f:
-            f.write(filetext)
 
     def _write_cargo_file(self) -> None:
         """ writes the cargo.toml file to the pip dir"""
@@ -219,42 +212,30 @@ class AvroWriter(object):
         with open(filepath, 'w') as f:
             f.write(filetext)
 
-    def _write_setup_file(self) -> None:
-        """ writes the setup.py file to the pip dir"""
-        filepath = self.pip_dir + '/setup.py'
-        template = self.template_env.get_template('files/setup.j2')
+    def _test_main_file(self) -> None:
+        """ writes the lib.rs file to the pip dir"""
+        filepath = self.pip_dir + '/src/main.rs'
+        template = self.template_env.get_template('files/main.j2')
         filetext = template.render(
             pip=self.pip,
             author=self.author,
             package_version=self.package_version
         )
-        with open(filepath, 'w') as f:
-            f.write(filetext)
-
-    def _write_pip_init_file(self) -> None:
-        """ writes the __init__ file to the pip dir"""
-        filepath = self.pip_dir + '/' + self.pip + '/__init__.py'
-        template = self.template_env.get_template('files/pip_init.j2')
-        filetext = template.render(
-            pip=self.pip,
-            author=self.author,
-            package_version=self.package_version
-        )
-        with open(filepath, 'w') as f:
-            f.write(filetext)
-
-    def _write_py_typed_file(self) -> None:
-        """ writes the py.typed file to the pip dir, package comply with PEP-561"""
-        filepath = self.pip_dir + '/' + self.pip + '/py.typed'
-        template = self.template_env.get_template('files/py.j2')
-        filetext = template.render()
         with open(filepath, 'w') as f:
             f.write(filetext)
 
     def _write_helper_file(self) -> None:
         """ writes the helper file to the root dir """
-        filepath = self.root_dir + '/helpers.py'
+        filepath = self.pip_dir + '/src/helpers.rs'
         template = self.template_env.get_template('files/helpers.j2')
+        filetext = template.render()
+        with open(filepath, 'w') as f:
+            f.write(filetext)
+
+    def _write_error_file(self) -> None:
+        """ writes the helper file to the root dir """
+        filepath = self.pip_dir + '/src/error.rs'
+        template = self.template_env.get_template('files/error.j2')
         filetext = template.render()
         with open(filepath, 'w') as f:
             f.write(filetext)

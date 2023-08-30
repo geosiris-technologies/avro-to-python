@@ -1,8 +1,7 @@
 {%- block fixed -%}
-
 {%- if file.name == 'Uuid' -%}
-pub type Uuid = [u8; 16];
+#![allow(unused_imports)]
 
+pub use uuid::{uuid, Uuid};
 {% endif -%}
-
 {%- endblock -%}

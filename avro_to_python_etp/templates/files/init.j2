@@ -1,5 +1,0 @@
-""" init file for file imports at namespace level """
-{# {%- for file in imports %} #}
-{# from {{pip_import}}.{{file}} import {{file.name}} #}
-{# from {{pip_import}}.{{namespace}}.{{file|snake_case}} import {{file}}
-{% endfor %} #}

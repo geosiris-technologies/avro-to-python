@@ -2,22 +2,20 @@
 {%- if field.fieldtype == 'reference' -%}
 {%- elif field.fieldtype == 'primitive' -%}
 	{%- if field.default is not none -%}
-    {%- if field.default == "" -%}
-        #[derivative(Default(value = String::from("") ))]
+    {%- if field.avrotype == "string" -%}
+        #[derivative(Default(value = r#"String::from("{{field.default}}")"# ))]
+    {%- elif field.avrotype == 'boolean' -%}
+       #[derivative(Default(value = "{{field.default | snake_case}}" ))]
     {%- else -%}
-        {%- if field.avrotype == "string" -%}
-            #[derivative(Default(value = String::from("{{field.default}}") ))]
-        {%- else -%}
-           #[derivative(Default(value = {{field.default}} ))]
-        {%- endif -%}
-      {%- endif -%}
+       #[derivative(Default(value = "{{field.default}}" ))]
+    {%- endif -%}
   {%- endif -%}
 {%- elif field.fieldtype == 'array' -%}
-  {%- if field.default is not none -%}
+  {#- {%- if field.default is not none -%}
     #[derivative(Default(value = "Vec::new({{field.default}})" ))]
-  {%- else %}
+  {%- else %} -#}
     #[derivative(Default(value = "Vec::new()" ))]
-  {%- endif -%}
+  {#- {%- endif -%} -#}
 {%- elif field.fieldtype == 'union' -%}
 {%- elif field.fieldtype == 'map' -%}
   {%- if field.default is not none -%}
@@ -32,9 +30,9 @@
 {#-  -#}
 {%- macro compute_field_name(name) -%}
 {%- if name|snake_case|is_reserved -%}
-pub {{name|snake_case ~ '_ '}}
+  pub {{name|snake_case ~ '_ '}}
 {%- else -%}
-pub {{name|snake_case}}
+  pub {{name|snake_case}}
 {%- endif -%}
 {% endmacro -%}
 {#-  -#}
