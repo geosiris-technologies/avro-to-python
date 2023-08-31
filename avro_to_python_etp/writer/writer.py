@@ -3,6 +3,8 @@ import os
 import re 
 
 import json
+import pkg_resources
+import shutil
 from typing import Any, List
 from anytree import Node, LevelOrderIter
 from textwrap import TextWrapper, fill, wrap
@@ -172,16 +174,35 @@ class AvroWriter(object):
 
         self._write_dfs()
 
-        self._write_lib_file()
-        self._write_helper_file()
-        self._write_error_file()
         self._write_default_protocols_file()
+        # self._write_helper_file()
+        # self._write_lib_file()
+        # self._write_error_file()
+        # self._write_message_file()
         
         if self.pip:
             self._write_cargo_file()
-            self._test_main_file()
 
+        self.copy_raw()
         self.gen_mods_files()
+        # self.copy_tests()
+
+    def copy_raw(self):
+        test_dir = self.pip_dir
+        folder = pkg_resources.resource_filename("avro_to_python_etp", "raw_files")
+        for path, dirs, files in os.walk(folder):
+            cur_folder = path.replace(folder, "")
+            while cur_folder.startswith("/") or cur_folder.startswith("\\"):
+                cur_folder = cur_folder[1:]
+
+            cur_folder = self.pip_dir + "/" + cur_folder
+
+            try:
+                os.makedirs(cur_folder)
+            except FileExistsError:
+                pass
+            for file_name in files:
+                shutil.copy(path + "/" + file_name, cur_folder + "/" + file_name)
 
 
     def gen_mods_files(self):
@@ -204,46 +225,6 @@ class AvroWriter(object):
             author=self.author,
             package_version=self.package_version
         )
-        with open(filepath, 'w') as f:
-            f.write(filetext)
-
-    def _write_lib_file(self) -> None:
-        """ writes the lib.rs file to the pip dir"""
-        filepath = self.pip_dir + '/src/lib.rs'
-        template = self.template_env.get_template('files/lib.j2')
-        filetext = template.render(
-            pip=self.pip,
-            author=self.author,
-            package_version=self.package_version
-        )
-        with open(filepath, 'w') as f:
-            f.write(filetext)
-
-    def _test_main_file(self) -> None:
-        """ writes the main.rs file to the pip dir"""
-        filepath = self.pip_dir + '/src/main.rs'
-        template = self.template_env.get_template('files/main.j2')
-        filetext = template.render(
-            pip=self.pip,
-            author=self.author,
-            package_version=self.package_version
-        )
-        with open(filepath, 'w') as f:
-            f.write(filetext)
-
-    def _write_helper_file(self) -> None:
-        """ writes the helper file to the root dir """
-        filepath = self.pip_dir + '/src/helpers.rs'
-        template = self.template_env.get_template('files/helpers.j2')
-        filetext = template.render()
-        with open(filepath, 'w') as f:
-            f.write(filetext)
-
-    def _write_error_file(self) -> None:
-        """ writes the error file to the root dir """
-        filepath = self.pip_dir + '/src/error.rs'
-        template = self.template_env.get_template('files/error.j2')
-        filetext = template.render()
         with open(filepath, 'w') as f:
             f.write(filetext)
 
