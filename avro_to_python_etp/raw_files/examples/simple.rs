@@ -1,3 +1,5 @@
+use std::env;
+
 use etptypes::energistics::etp::v12::datatypes::protocol::Protocol;
 use std::time::{SystemTime};
 use std::collections::HashMap;
@@ -11,7 +13,13 @@ use etptypes::helpers::*;
 use etptypes::error::*;
 
 
+fn test_trait<T: EtpMessageBody>(obj: &T){
+    println!("Protocol {:?}; Messagetype {:?}", obj.protocol(), obj.message_type());
+}
+
 fn main() {
+    env::set_var("RUST_BACKTRACE", "1");
+
     let protocols = vec![
     SupportedProtocol{
         protocol: Protocol::core as i32,
@@ -53,4 +61,7 @@ fn main() {
     println!("{:?}", einvalid_messagetype());
     println!("{:?}", Protocol::core);
     println!("{:?}", RequestSession::default());
+
+    test_trait(&rq);
+    println!("==========\n\n{:?}", rq.avro_serialize());
 }

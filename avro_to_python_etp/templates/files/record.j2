@@ -1,4 +1,5 @@
 {%- block record -%}
+
 {% set ns = namespace(optional=false) %}
 
 {%- for name, field in file.fields.items() -%}
@@ -34,7 +35,44 @@ pub struct {{file.name}}{
 {% endif %}
 }
 
-impl {{file.name}} {
-    {% include 'partials/avroSchema.j2' %}
+pub static AVRO_SCHEMA: &'static str = {% include 'partials/avroSchema.j2' %};
+
+{%- if isEtpMessage() == "true" %}
+
+impl EtpMessageBody for {{file.name}}{
+    fn avro_schema() -> Option<Schema>{
+        match Schema::parse_str(AVRO_SCHEMA) {
+            Ok(result) => Some(result),
+            Err(e) => {
+                panic!("{:?}", e);
+            }
+        }
+    }
+{%- block a scoped %}
+{%- for name, attr in file.schema.items() -%}
+{%- if isEtpMessageMeta(name) == "true" %}
+    fn {{name|snake_case}}(&self) -> 
+    {%- if attr | int | string == attr -%}
+        i32
+    {%- elif attr | snake_case == "true" or attr | snake_case == "false" -%}
+        bool
+    {%- else -%}
+        String
+    {%- endif -%}
+    {
+        {% block b scoped %}
+            {%- if attr | int | string == attr -%}
+            {{ attr }}
+            {%- elif attr | snake_case == "true" or attr | snake_case == "false" -%}
+            {{ attr | snake_case}}
+            {%- else -%}
+            "{{ attr }}".to_string()
+            {%- endif %}
+        {%- endblock b %}
+    }
+{%- endif %}
+{%- endfor %}
 }
+{%- endblock a %}
+{%- endif -%}
 {%- endblock %}

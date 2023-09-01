@@ -1,11 +1,12 @@
 {% block fileimports -%}
 {%- if file.imports -%}
-{% for imp in file.imports %}    
-	{%- if imp.name == "Uuid" -%}
+{% for imp in file.imports -%}    
+	{#- {%- if imp.name == "Uuid" -%}
 		use uuid::{uuid, Uuid};
 	{%- else -%}
 		use crate::{{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{{imp.name}};
-	{%- endif %}
+	{%- endif %} -#}
+	use crate::{{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{{imp.name}};
 {% endfor -%}
 {%- endif -%}
 {% endblock %}

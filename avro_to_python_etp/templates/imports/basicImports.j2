@@ -1,4 +1,10 @@
 {%- block basicimports %}
+
+{%- if isEtpMessage() == "true" -%}
+use avro_rs::{Schema, Error};
+use crate::helpers::EtpMessageBody;
+{% endif %}
+
 {%- if file.avrotype == 'enum' %}
 {# {%- elif file.avrotype == 'fixed' %} #}
 {# from {{pip_import}}.helpers import Fixed #}

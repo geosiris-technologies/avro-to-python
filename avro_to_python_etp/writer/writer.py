@@ -179,6 +179,7 @@ class AvroWriter(object):
         # self._write_lib_file()
         # self._write_error_file()
         # self._write_message_file()
+        self._write_message_impl_file()
         
         if self.pip:
             self._write_cargo_file()
@@ -215,6 +216,18 @@ class AvroWriter(object):
                                          sub_modules = list(dict.fromkeys(dirs + list(map(lambda x: x.replace(".rs", "") , list(filter(lambda x: x.endswith(".rs"), files)) )) ))
                                         )
 
+
+    def _write_message_impl_file(self) -> None:
+        """ writes the message_impl.rs file to the pip dir"""
+        filepath = self.pip_dir + '/src/message_impl.rs'
+        template = self.template_env.get_template('files/message_impl.j2')
+        filetext = template.render(
+            pip=self.pip,
+            author=self.author,
+            package_version=self.package_version
+        )
+        with open(filepath, 'w') as f:
+            f.write(filetext)
 
     def _write_cargo_file(self) -> None:
         """ writes the cargo.toml file to the pip dir"""
@@ -328,3 +341,16 @@ class AvroWriter(object):
                     imports.add(
                         c.file.name
                     )
+
+
+
+# DONE : faire un trait pour les messages "protocol": "0", "messageType": "2", "senderRole": "server", "protocolRoles": "client, server", "multipartFlag"
+# DONE : pub static AVRO_SCHEMA: &'static str = 
+# TODO : ajouter les serialization / deserial avro ? ==> peut etre plutot dans etpproto  ?
+# TODO : générer un match pour les couple protocol et message header ==> pour déserialiser les message en fonction du messsageHeader.
+# TODO : voir si on supprime les chunck pour faire une seule struct (aussi modifier lors des imports : soit on vire les fichier chunck soit on laisse mais en pub use le manual chunck)
+#           ==> voir si ils ont pas fait dejà la correction poru les protocol exception qui est un message dont le header peut avoir des "protocol" et "messageType" variable selon le message en erreur
+# Regarder pour etpproto si on peut générer une lib avec option (comme python : pip install numpy[monoption]) ==> pour mettre dans la websocket en option pour réduire le code du client.
+
+# TODO : voir si le dependabot peut voir depuis etptypes que avro-to-etp a une nouvelle version : crée une nouvelle branche et push le code. La main de etptypes aurait que le avpr.
+# TODO :  incrémenter etptype  le numero de version autoamtuiquement a la CI mais en gardant le +1.2 apres le numero
