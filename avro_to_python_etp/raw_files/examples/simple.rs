@@ -1,8 +1,8 @@
 use std::env;
 
-use etptypes::energistics::etp::v12::datatypes::protocol::Protocol;
 use std::time::{SystemTime};
 use std::collections::HashMap;
+use etptypes::energistics::etp::v12::datatypes::protocol::Protocol;
 use etptypes::energistics::etp::v12::datatypes::supported_protocol::SupportedProtocol;
 
 use etptypes::energistics::etp::v12::protocol::core::request_session::RequestSession;
@@ -63,5 +63,8 @@ fn main() {
     println!("{:?}", RequestSession::default());
 
     test_trait(&rq);
-    println!("==========\n\n{:?}", rq.avro_serialize());
+    // let schemata: Vec<Schema> = Schema::parse_list(&ETP_SCHEMA_EMBED)
+    // println!("{:?}", schemata);
+    // println!("==========\n\n{:?}", rq.avro_serialize());
+    // println!("==========\n\n{:?}", rq.avro_serialize());
 }

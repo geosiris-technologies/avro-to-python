@@ -179,7 +179,7 @@ class AvroWriter(object):
         # self._write_lib_file()
         # self._write_error_file()
         # self._write_message_file()
-        self._write_message_impl_file()
+        # self._write_message_impl_file()
         
         if self.pip:
             self._write_cargo_file()
@@ -248,6 +248,7 @@ class AvroWriter(object):
 
         # Search protocol :
         protocols = []
+        all_types = []
         for node in LevelOrderIter(self.tree, filter_=lambda n: not n.is_leaf):
             imports = set()
             path = [str(n.name) for n in node.path]
@@ -256,6 +257,8 @@ class AvroWriter(object):
             for c in node.children:
                 if c.is_leaf:
                     f = c.file
+                    if f.schema is not None:
+                        all_types.append(f)
                     if "protocol" in f.schema:
                         print(f)
                         protocols.append(f)
@@ -264,6 +267,7 @@ class AvroWriter(object):
 
         filetext = template.render(
             protocols=protocols,
+            all_types=list(set(map(lambda x : json.dumps(x.schema), all_types))),
             primitive_type_map=PRIMITIVE_TYPE_MAP,
             get_union_types=get_union_types,
             get_union_types_enum_name=get_union_types_enum_name,

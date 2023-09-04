@@ -82,6 +82,13 @@ crate::{{ns|lower_and_snake_module}}
 	{%- endif -%}
 {%- endmacro -%}
 
+{%- macro compute_ns_file_name(ns, name) -%}
+crate::{{ns|lower_and_snake_module}}
+	{%- if name is not none and name|length >0 -%}
+	::{{name|snake_case_module}}
+	{%- endif -%}
+{%- endmacro -%}
+
 {%- macro attrib_is_param(field) -%}
 {%- if (field.fieldtype == 'reference' and not field.reference_name.endswith("Uuid"))
 		or (field.fieldtype == 'primitive' 
@@ -105,12 +112,14 @@ use std::time::{SystemTime};
 use crate::energistics::etp::v12::datatypes::uuid::Uuid;
 use crate::helpers::*;
 
-{# {%- for file in protocols -%}
-	use {{compute_ns_type_name(file.namespace, file.name)}};
-{% endfor %} #}
 
-
-{%- for file in protocols %}
+{#- static ETP_SCHEMA_EMBED: [&str; {{ all_types | length }}] = [
+{%- for schema in all_types %}
+	r#"{{schema}}"#,
+{%- endfor %}
+];
+ -#}
+{% for file in protocols %}
 {%- set nb_param = namespace(value=0) %}
 {%- for name, field in file.fields.items() -%}
 	{%- if attrib_is_param(field) == "true" -%}
@@ -118,8 +127,7 @@ use crate::helpers::*;
 	{%- endif -%}
 {%- endfor -%}
 
-impl {% if nb_param.value == 0 -%}
- Default for
+impl{% if nb_param.value == 0 %} Default for
 {%- endif %} {{ compute_ns_type_name(file.namespace, file.name) }} {
 
 {%- block default_impl scoped %}
@@ -157,4 +165,16 @@ impl {% if nb_param.value == 0 -%}
 {%- endblock default_impl %}
 }
 
+{% endfor -%}
+
+
+pub fn get_message_schema(protocol: i32, message_type: i32) -> &'static str{
+	match (protocol, message_type) {
+{%- for file in protocols %}
+{%- block protocol_match scoped %}
+		({{file.schema.protocol}}, {{file.schema.messageType}}) => {{ compute_ns_file_name(file.namespace, file.name) }}::AVRO_SCHEMA,
+{%- endblock protocol_match -%}
 {% endfor %}
+		_ => "",
+	}
+}
