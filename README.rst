@@ -1,34 +1,34 @@
 ==================
-avro-to-python-etp
+avro-to-rust-etp
 ==================
 
-avro-to-python-etp is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy.
+avro-to-rust-etp is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy.
 
 
 * Free software: MIT license
-* Documentation: https://avro-to-python-etp.readthedocs.io.
+* Documentation: https://avro-to-rust-etp.readthedocs.io.
 
 Installation
 ^^^^^^^^^^^^
 
 Pip install (recommended)
 -------------------------
-To install avro-to-python-etp, run this command in your terminal:
+To install avro-to-rust-etp, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install avro-to-python-etp
+    $ pip install avro-to-rust-etp
 
 Install From Source ()
 ----------------------
 
-The sources for avro-to-python-etp can be downloaded source as well.
+The sources for avro-to-rust-etp can be downloaded source as well.
 
 Clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/srserves85/avro-to-python-etp
+    $ git clone git://github.com/srserves85/avro-to-rust-etp
 
 
 Once you have a copy of the source, you can install it with:
@@ -48,7 +48,7 @@ or
 Examples
 ^^^^^^^^
 
-Majority of the use of avro-to-python-etp is assumed to be used as a cli, but you can still import and use the python classes under the hood as well.
+Majority of the use of avro-to-rust-etp is assumed to be used as a cli, but you can still import and use the python classes under the hood as well.
 
 CLI (without --pip)
 -------------------
@@ -56,7 +56,7 @@ To use the cli, here is the available cli commands:
 
 .. code-block:: bash
 
-    avro-to-python-etp [source] [target]
+    avro-to-rust-etp [source] [target]
         Options:
             --pip TEXT              make package pip installable using this name
             --author TEXT           author name of the pip installable package
@@ -70,7 +70,7 @@ An example of doing this is the following:
 
 .. code-block:: bash
 
-    avro-to-python-etp [path_to_source_avsc_files] [path_to_target_directory]
+    avro-to-rust-etp [path_to_source_avsc_files] [path_to_target_directory]
 
 
 If you run the above on a valid avro avsc file, you should then be able to import them as you would in the avro idl namespace Here is an example of a single avsc record from the namespace: *name.space* and name: *RecordClass*:
@@ -87,7 +87,7 @@ CLI (with --pip)
 You can also choose to make compiled avro packages ***pip installable*** by adding the "--pip" flags. An example of this is the following:
 .. code-block:: bash
 
-    avro-to-python-etp [path_to_source_avsc_files] [path_to_target_directory] --pip test_avro
+    avro-to-rust-etp [path_to_source_avsc_files] [path_to_target_directory] --pip test_avro
 
 By running this, you should be able to pip install the above package you created from the target directory you specified by running:
 
@@ -104,9 +104,9 @@ Now that you have the package installed, you can import it by it's package name 
     record = RecordClass({'foo': True, 'bar': 'true', 'baz': 10, 'food': 'CHOCOLATE'})
 
 
-avro-to-python-etp in a Script
+avro-to-rust-etp in a Script
 ------------------------------
-You can also use the reader and writer packages in avro-to-python-etp as you would any other python package. Avro to python is split between a *reader* and *writer* classes. avro-to-python-etp treates namespaces as acyclic trees and uses depth first search to ensure no duplication or namespace collisions on read and write. An example useage is below:
+You can also use the reader and writer packages in avro-to-rust-etp as you would any other python package. Avro to python is split between a *reader* and *writer* classes. avro-to-rust-etp treates namespaces as acyclic trees and uses depth first search to ensure no duplication or namespace collisions on read and write. An example useage is below:
 
 .. code-block:: python
 
@@ -164,3 +164,10 @@ Documentation
 - [ ] Document reader class
 - [ ] Document writer class
 - [ ] Document cli
+
+
+Usage
+-----
+
+.. code-block:: bash
+    poetry run avro-to-rust-etp output ../etptypes-rs --pip etptypes --package_version 1.0.0+1.2 > log.log

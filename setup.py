@@ -51,23 +51,23 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    description="avro-to-python-etp is a light tool for compiling avro schema files (.avsc) to python classes making using avro schemata easy.",
+    description="avro-to-rust-etp is a light tool for compiling avro schema files (.avsc) to rust classes making using avro schemata easy.",
     entry_points={
         'console_scripts': [
-            'avro-to-python-etp=avro_to_python_etp.cli:main',
-            'avpr-to-avsc=avro_to_python_etp.avpr_to_avsc:main'
+            'avro-to-rust-etp=avro_to_rust_etp.cli:main',
+            'avpr-to-avsc=avro_to_rust_etp.avpr_to_avsc:main'
         ],
     },
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='avro-to-python-etp',
-    name='avro_to_python_etp',
-    packages=find_packages(include=['avro_to_python_etp', 'avro_to_python_etp.*']),
+    keywords='avro-to-rust-etp',
+    name='avro_to_rust_etp',
+    packages=find_packages(include=['avro_to_rust_etp', 'avro_to_rust_etp.*']),
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/srserves85/avro-to-python_etp',
+    url='https://github.com/srserves85/avro-to-rust_etp',
     version=version,
     zip_safe=False,
 )
