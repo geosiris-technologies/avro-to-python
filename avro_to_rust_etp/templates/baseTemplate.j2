@@ -1,29 +1,4 @@
-{%- macro isEtpMessageMeta(attribute) -%}
-{%- if ("protocol" == attribute
-        or "messageType" == attribute
-        or "senderRole" == attribute
-        or "protocolRoles" == attribute
-        or "multipartFlag" == attribute
-        )
-     -%}
-    true
-    {%- else -%}
-    false
-    {%- endif -%}
-{%- endmacro -%}
-{%- macro isEtpMessage() -%}
-{%- if ("protocol" in file.schema
-        or "messageType" in file.schema
-        or "senderRole" in file.schema
-        or "protocolRoles" in file.schema
-        or "multipartFlag" in file.schema
-        )
-     -%}
-    true
-    {%- else -%}
-    false
-    {%- endif -%}
-{%- endmacro -%}
+{%- import 'macro.j2' as macros with context -%}
 
 {%- if file.avrotype == 'fixed' -%}
 {%- include 'files/fixed.j2' -%}

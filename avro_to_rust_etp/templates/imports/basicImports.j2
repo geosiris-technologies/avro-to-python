@@ -1,6 +1,6 @@
 {%- block basicimports %}
 
-{%- if isEtpMessage() == "true" -%}
+{%- if macros.isEtpMessage() == "true" -%}
 use avro_rs::{Schema, Error};
 use crate::helpers::EtpMessageBody;
 {% endif %}

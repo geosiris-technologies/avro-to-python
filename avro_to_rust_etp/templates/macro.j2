@@ -1,0 +1,137 @@
+{%- macro isEtpMessageMeta(attribute) -%}
+{%- if ("protocol" == attribute
+        or "messageType" == attribute
+        or "senderRole" == attribute
+        or "protocolRoles" == attribute
+        or "multipartFlag" == attribute
+        )
+     -%}
+    true
+    {%- else -%}
+    false
+    {%- endif -%}
+{%- endmacro -%}
+{#- =================== -#}
+{%- macro isEtpMessage() -%}
+{%- if ("protocol" in file.schema
+        or "messageType" in file.schema
+        or "senderRole" in file.schema
+        or "protocolRoles" in file.schema
+        or "multipartFlag" in file.schema
+        )
+     -%}
+    true
+    {%- else -%}
+    false
+    {%- endif -%}
+{%- endmacro -%}
+
+{#- =================== -#}
+{%- macro compute_field_name(name) -%}
+{%- if name|snake_case|is_reserved -%}
+  {{name|snake_case ~ '_ '}}
+{%- else -%}
+  {{name|snake_case}}
+{%- endif -%}
+{% endmacro -%}
+
+{%- macro compute_field_name_as_param(name) -%}
+_{{ name | snake_case }}
+{%- endmacro -%}
+
+{#- =================== -#}
+{%- macro compute_default(field) -%}
+{%- if field.default is not none -%}
+        {%- if field.fieldtype == 'reference' -%}
+        {%- elif field.fieldtype == 'primitive' -%}
+            {%- if field.avrotype == "string" -%}
+            "{{field.default}}".to_string()
+            {%- elif field.avrotype == 'boolean' -%}
+            {{field.default | snake_case}}
+            {%- else -%}
+            {{field.default}}
+            {%- endif -%}
+        {%- elif field.fieldtype == 'array' -%}
+                {#- Vec::new({{ rgx_sub("\['(.*)'\]", '["\g<1>"]', field.default)}}) -#}
+                vec!(
+                {%- for val in field.default -%}
+                {%- if val is string -%}
+                "
+                        {%- endif -%}
+                        {{val}}
+                {%- if val is string -%}
+                        ".to_string()
+                        {%- endif -%}
+                        ,
+                {%- endfor -%}
+                )
+        {%- elif field.fieldtype == 'union' -%}
+        {%- elif field.fieldtype == 'map' -%}
+                HashMap::new(
+                {%- if field.default != {} -%}
+                {{field.default}}
+                {%- endif -%}
+            )
+        {%- endif -%}
+
+{%- else -%} {#-        No default found        -#}
+
+        {%- if field.fieldtype == 'reference' -%}
+                {%- if field.reference_name.endswith("Uuid") -%}
+                        Uuid::new_v4()
+                {%- else -%}
+                        {#- default function parameter -#}
+                        {{ compute_field_name_as_param(field.name) }}
+                {%- endif -%}
+        {%- elif field.fieldtype == 'primitive' -%}
+            {%- if field.avrotype == "string" -%}
+            "".to_string()
+            {%- elif field.avrotype == 'boolean' -%}
+            true
+            {%- else -%}
+                {%- if field.avrotype == "long" and (field.name.endswith("_time") or field.name.endswith("Time")) -%}
+                        time_to_etp(SystemTime::now())
+                {%- else -%}
+                        {{ compute_field_name_as_param(field.name) }}
+                {%- endif -%}
+            {%- endif -%}
+        {%- elif field.fieldtype == 'array' -%}
+            vec![]
+        {%- elif field.fieldtype == 'union' -%}
+                None
+        {%- elif field.fieldtype == 'map' -%}
+            HashMap::new()
+        {%- endif -%}
+{%- endif -%}
+{%- endmacro -%}
+
+{#- =================== -#}
+{%- macro compute_ns_type_name(ns, name) -%}
+crate::{{ns|lower_and_snake_module}}
+        {%- if name is not none and name|length >0 -%}
+        ::{{name|snake_case_module}}::{{name}}
+        {%- endif -%}
+{%- endmacro -%}
+{#- =================== -#}
+{%- macro compute_ns_file_name(ns, name) -%}
+crate::{{ns|lower_and_snake_module}}
+        {%- if name is not none and name|length >0 -%}
+        ::{{name|snake_case_module}}
+        {%- endif -%}
+{%- endmacro -%}
+
+{#- =================== -#}
+{%- macro attrib_is_param(field) -%}
+{%- if (field.fieldtype == 'reference' and not field.reference_name.endswith("Uuid"))
+                or (field.fieldtype == 'primitive' 
+                        and not (field.avrotype == "string" or field.avrotype == 'boolean'
+                                                or (field.avrotype == "long" and (field.name.endswith("_time") or field.name.endswith("Time")))
+                                        )
+                        )
+                or field.fieldtype == 'union'
+         -%}
+        true
+        {%- else -%}
+        false
+        {%- endif -%}
+{%- endmacro -%}

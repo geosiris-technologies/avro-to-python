@@ -179,7 +179,7 @@ class AvroWriter(object):
 
         self._write_dfs()
 
-        self._write_default_protocols_file()
+        # self._write_default_protocols_file()
         # self._write_helper_file()
         # self._write_lib_file()
         # self._write_error_file()
@@ -245,7 +245,6 @@ class AvroWriter(object):
             package_version=self.package_version
         )
         with open(filepath, 'w') as f:
-            f.write(RUST_FILE_LICENSE)
             f.write(filetext)
 
     def _write_default_protocols_file(self) -> None:

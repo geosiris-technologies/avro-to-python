@@ -1,111 +1,4 @@
-{%- macro compute_field_name(name) -%}
-{%- if name|snake_case|is_reserved -%}
-  {{name|snake_case ~ '_ '}}
-{%- else -%}
-  {{name|snake_case}}
-{%- endif -%}
-{% endmacro -%}
-
-{%- macro compute_field_name_as_param(name) -%}
-_{{ name | snake_case }}
-{%- endmacro -%}
-
-{%- macro compute_default(field) -%}
-{%- if field.default is not none -%}
-	{%- if field.fieldtype == 'reference' -%}
-	{%- elif field.fieldtype == 'primitive' -%}
-	    {%- if field.avrotype == "string" -%}
-	    "{{field.default}}".to_string()
-	    {%- elif field.avrotype == 'boolean' -%}
-	    {{field.default | snake_case}}
-	    {%- else -%}
-	    {{field.default}}
-	    {%- endif -%}
-	{%- elif field.fieldtype == 'array' -%}
-		{#- Vec::new({{ rgx_sub("\['(.*)'\]", '["\g<1>"]', field.default)}}) -#}
-		vec!(
-		{%- for val in field.default -%}
-	    	{%- if val is string -%}
-	    	"
-			{%- endif -%}
-			{{val}}
-	    	{%- if val is string -%}
-	    		".to_string()
-			{%- endif -%}
-			,
-		{%- endfor -%}
-		)
-	{%- elif field.fieldtype == 'union' -%}
-	{%- elif field.fieldtype == 'map' -%}
-		HashMap::new(
-		{%- if field.default != {} -%}
-	    	{{field.default}}
-		{%- endif -%}
-	    )
-	{%- endif -%}
-
-{%- else -%} {#- 	No default found	-#}
-
-	{%- if field.fieldtype == 'reference' -%}
-		{%- if field.reference_name.endswith("Uuid") -%}
-			Uuid::new_v4()
-		{%- else -%}
-			{#- default function parameter -#}
-			{{ compute_field_name_as_param(field.name) }}
-		{%- endif -%}
-	{%- elif field.fieldtype == 'primitive' -%}
-	    {%- if field.avrotype == "string" -%}
-	    "".to_string()
-	    {%- elif field.avrotype == 'boolean' -%}
-	    true
-	    {%- else -%}
-	    	{%- if field.avrotype == "long" and (field.name.endswith("_time") or field.name.endswith("Time")) -%}
-	    		time_to_etp(SystemTime::now())
-	    	{%- else -%}
-	    		{{ compute_field_name_as_param(field.name) }}
-	    	{%- endif -%}
-	    {%- endif -%}
-	{%- elif field.fieldtype == 'array' -%}
-	    vec![]
-	{%- elif field.fieldtype == 'union' -%}
-		None
-	{%- elif field.fieldtype == 'map' -%}
-	    HashMap::new()
-	{%- endif -%}
-{%- endif -%}
-{%- endmacro -%}
-
-{%- macro compute_ns_type_name(ns, name) -%}
-crate::{{ns|lower_and_snake_module}}
-	{%- if name is not none and name|length >0 -%}
-	::{{name|snake_case_module}}::{{name}}
-	{%- endif -%}
-{%- endmacro -%}
-
-{%- macro compute_ns_file_name(ns, name) -%}
-crate::{{ns|lower_and_snake_module}}
-	{%- if name is not none and name|length >0 -%}
-	::{{name|snake_case_module}}
-	{%- endif -%}
-{%- endmacro -%}
-
-{%- macro attrib_is_param(field) -%}
-{%- if (field.fieldtype == 'reference' and not field.reference_name.endswith("Uuid"))
-		or (field.fieldtype == 'primitive' 
-			and not (field.avrotype == "string" or field.avrotype == 'boolean'
-						or (field.avrotype == "long" and (field.name.endswith("_time") or field.name.endswith("Time")))
-					)
-			)
-	 -%}
-	true
-	{%- else -%}
-	false
-	{%- endif -%}
-{%- endmacro -%}
-
-{#-
-========= Starting translation
--#}
+{%- include 'macro.j2' %}
 {%- include 'partials/header.j2' %}
 
 use std::time::{SystemTime};
@@ -122,13 +15,13 @@ use crate::helpers::*;
 {% for file in protocols %}
 {%- set nb_param = namespace(value=0) %}
 {%- for name, field in file.fields.items() -%}
-	{%- if attrib_is_param(field) == "true" -%}
+	{%- if macros.attrib_is_param(field) == "true" -%}
 		{%- set nb_param.value = nb_param.value + 1 -%}
 	{%- endif -%}
 {%- endfor -%}
 
 impl{% if nb_param.value == 0 %} Default for
-{%- endif %} {{ compute_ns_type_name(file.namespace, file.name) }} {
+{%- endif %} {{ macros.compute_ns_type_name(file.namespace, file.name) }} {
 
 {%- block default_impl scoped %}
 	/* Protocol {{file.schema.protocol}}, MessageType : {{file.schema.messageType}} */
@@ -139,23 +32,23 @@ impl{% if nb_param.value == 0 %} Default for
 	{%- endif -%}
 	(
 	{%- for name, field in file.fields.items() -%}
-		{%- if attrib_is_param(field) == "true" -%}
-			{{compute_field_name_as_param(name)}} : 
+		{%- if macros.attrib_is_param(field) == "true" -%}
+			{{macros.compute_field_name_as_param(name)}} : 
 		{%- if field.fieldtype == 'reference' -%}
-			{{compute_ns_type_name(field.reference_namespace , field.reference_name)}},
+			{{macros.compute_ns_type_name(field.reference_namespace , field.reference_name)}},
 		{%- elif field.fieldtype == 'primitive' -%}
 			{%- include 'fields/primitiveField.j2' -%},
 		{%- endif -%}
 		{%- endif -%}
 	{%- endfor -%}
 	)
-	-> {{ compute_ns_type_name(file.namespace, file.name) }} {
+	-> {{ macros.compute_ns_type_name(file.namespace, file.name) }} {
 	{%- block default_function scoped %}
-		{{ compute_ns_type_name(file.namespace, file.name) }} {
+		{{ macros.compute_ns_type_name(file.namespace, file.name) }} {
 		
 		{%- block default_function_impl scoped -%}
 			{%- for name, field in file.fields.items() %}
-			{{ compute_field_name(field.name) }} : {{compute_default(field)}},
+			{{ macros.compute_field_name(field.name) }} : {{compute_default(field)}},
 			{%- endfor -%}
 		{%- endblock default_function_impl %}
 		}

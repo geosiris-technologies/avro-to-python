@@ -7,7 +7,7 @@ Vec<{{primitive_type_map[field.array_item_type.avrotype]}}> #}
 Vec<{{primitive_type_map[field.array_item_type.avrotype]}}>
 {%- elif field.array_item_type.fieldtype == 'union' -%}
   {%- if field.array_item_type.optional %}
-    {%- if field.array_item_type.union_types|length > 1 %}
+    {%- if field.array_item_type.union_types|length > 1 -%}
     Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>
     {%- else -%}
     Vec<Option<{{get_union_types_enum_name(get_union_types(field.array_item_type, True, None))}}>>

@@ -37,7 +37,7 @@ pub struct {{file.name}}{
 
 pub static AVRO_SCHEMA: &'static str = {% include 'partials/avroSchema.j2' %};
 
-{%- if isEtpMessage() == "true" %}
+{%- if macros.isEtpMessage() == "true" %}
 
 impl EtpMessageBody for {{file.name}}{
     fn avro_schema() -> Option<Schema>{
@@ -50,7 +50,7 @@ impl EtpMessageBody for {{file.name}}{
     }
 {%- block a scoped %}
 {%- for name, attr in file.schema.items() -%}
-{%- if isEtpMessageMeta(name) == "true" %}
+{%- if macros.isEtpMessageMeta(name) == "true" %}
     fn {{name|snake_case}}(&self) -> 
     {%- if attr | int | string == attr -%}
         i32
@@ -76,3 +76,65 @@ impl EtpMessageBody for {{file.name}}{
 {%- endblock a %}
 {%- endif -%}
 {%- endblock %}
+
+{%- set nb_param = namespace(value=0) %}
+{%- for name, field in file.fields.items() -%}
+    {%- if macros.attrib_is_param(field) == "true" -%}
+        {%- set nb_param.value = nb_param.value + 1 -%}
+    {%- endif -%}
+{%- endfor %}
+
+
+{#- Generate default contructor with default value only if there are some default value for at least 1 param -#}
+
+
+{%- if file.fields|length > nb_param.value %}
+
+impl{% if nb_param.value == 0 %} Default for
+{%- endif %} {{ file.name}} {#- {{ macros.compute_ns_type_name(file.namespace, file.name) }} -#} {
+
+{%- block default_impl scoped %}
+    /* Protocol {{file.schema.protocol}}, MessageType : {{file.schema.messageType}} */
+    {% if nb_param.value > 0 -%}
+    pub fn default_with_params
+    {%- else -%}
+    fn default
+    {%- endif -%}
+    (
+    {%- for name, field in file.fields.items() -%}
+        {%- if macros.attrib_is_param(field) == "true" -%}
+            {{macros.compute_field_name_as_param(name)}}: {# -#}
+        {%- if field.fieldtype == 'reference' -%}
+            {{ field.reference_name }}, {# -#}
+            {#- {{macros.compute_ns_type_name(field.reference_namespace , field.reference_name)}}, -#}
+        {%- elif field.fieldtype == 'primitive' -%}
+            {%- include 'fields/primitiveField.j2' -%}, {# -#}
+        {%- elif field.fieldtype == 'union' -%}
+            {%- include 'fields/unionField.j2' -%}, {# -#}
+        {%- elif field.fieldtype == 'array' -%}
+            {%- include 'fields/arrayField.j2' -%}, {# -#}
+        {%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
+    )
+    -> {{ file.name }} {
+    {%- block default_function scoped %}
+        {{ file.name }} {
+        
+        {%- block default_function_impl scoped -%}
+            {%- for name, field in file.fields.items() %}
+            {{ macros.compute_field_name(field.name) }} : {# -#}
+                {%- if macros.attrib_is_param(field) == "true" -%}
+                    {{macros.compute_field_name_as_param(name)}},
+                {%- else -%}
+                    {{macros.compute_default(field)}},
+                {%- endif -%}
+            {%- endfor -%}
+        {%- endblock default_function_impl %}
+        }
+    {%- endblock default_function %}
+    }
+
+{%- endblock default_impl %}
+}
+{%- endif -%}
