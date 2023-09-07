@@ -2,7 +2,7 @@
 
 {%- if macros.isEtpMessage() == "true" -%}
 use avro_rs::{Schema, Error};
-use crate::helpers::EtpMessageBody;
+use crate::helpers::ETPMetadata;
 {% endif %}
 
 {%- if file.avrotype == 'enum' %}

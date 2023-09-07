@@ -14,6 +14,7 @@ pub fn time_to_etp(time: SystemTime) -> i64 {
 }
 
 pub enum Role {
+    All,
     Client,
     Server,
     Customer,
@@ -25,6 +26,7 @@ pub enum Role {
 impl Role {
     pub fn to_string(self) -> String {
         match self {
+            Self::All => "*".to_string(),
             Self::Client => "client".to_string(),
             Self::Server => "server".to_string(),
             Self::Customer => "customer".to_string(),
@@ -49,13 +51,13 @@ pub const ETP11VERSION: Version = Version {
     patch: 0,
 };
 
-pub trait EtpMessageBody {
+pub trait ETPMetadata {
     fn avro_schema() -> Option<Schema>;
 
     fn protocol(&self) -> i32;
     fn message_type(&self) -> i32;
-    fn sender_role(&self) -> String;
-    fn protocol_roles(&self) -> String;
+    fn sender_role(&self) -> Vec<Role>;
+    fn protocol_roles(&self) -> Vec<Role>;
     fn multipart_flag(&self) -> bool;
 
     fn avro_serialize(&self) -> Option<Vec<u8>> where Self: serde::Serialize{
