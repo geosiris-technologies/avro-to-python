@@ -179,6 +179,7 @@ class AvroWriter(object):
 
         self._write_dfs()
 
+        self._write_protocols_helper()
         # self._write_default_protocols_file()
         # self._write_helper_file()
         # self._write_lib_file()
@@ -251,6 +252,46 @@ class AvroWriter(object):
         """ writes the default_protocol.rs file to the root dir """
         filepath = self.pip_dir + '/src/default_protocols.rs'
         template = self.template_env.get_template('files/default_protocols.j2')
+
+        # Search protocol :
+        protocols = []
+        all_types = []
+        for node in LevelOrderIter(self.tree, filter_=lambda n: not n.is_leaf):
+            imports = set()
+            path = [str(n.name) for n in node.path]
+            namespace = "%s" % '.'.join([self.snake_case(str(x)) for x in path])
+            
+            for c in node.children:
+                if c.is_leaf:
+                    f = c.file
+                    if f.schema is not None:
+                        all_types.append(f)
+                    if "protocol" in f.schema:
+                        print(f)
+                        protocols.append(f)
+
+        protocols.sort(key=lambda r : (int(r.schema["protocol"]), int(r.schema["messageType"])))
+
+        filetext = template.render(
+            protocols=protocols,
+            all_types=list(set(map(lambda x : json.dumps(x.schema), all_types))),
+            primitive_type_map=PRIMITIVE_TYPE_MAP,
+            get_union_types=get_union_types,
+            get_union_types_enum_name=get_union_types_enum_name,
+            pascal_case=lambda w: self.pascal_case(w),
+            rgx_sub=rgx_sub,
+            json=json,
+            pip_import=self.pip_import,
+            enumerate=enumerate,
+        )
+        with open(filepath, 'w') as f:
+            f.write(RUST_FILE_LICENSE)
+            f.write(filetext)
+
+    def _write_protocols_helper(self) -> None:
+        """ writes the default_protocol.rs file to the root dir """
+        filepath = self.pip_dir + '/src/protocols.rs'
+        template = self.template_env.get_template('files/protocol_helper.j2')
 
         # Search protocol :
         protocols = []

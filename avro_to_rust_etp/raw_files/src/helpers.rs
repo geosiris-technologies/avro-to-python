@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 use avro_rs::{Codec, Schema, Writer};
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::fmt;
 
 use crate::energistics::etp::v12::datatypes::version::Version;
 
@@ -13,6 +14,7 @@ pub fn time_to_etp(time: SystemTime) -> i64 {
     return in_ms.try_into().unwrap();
 }
 
+#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize)]
 pub enum Role {
     All,
     Client,
@@ -23,17 +25,21 @@ pub enum Role {
     Consumer,
 }
 
-impl Role {
-    pub fn to_string(self) -> String {
-        match self {
-            Self::All => "*".to_string(),
-            Self::Client => "client".to_string(),
-            Self::Server => "server".to_string(),
-            Self::Customer => "customer".to_string(),
-            Self::Store => "store".to_string(),
-            Self::Producer => "producer".to_string(),
-            Self::Consumer => "consumer".to_string(),
-        }
+impl fmt::Display for Role{
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::All => "*".to_string(),
+                Self::Client => "client".to_string(),
+                Self::Server => "server".to_string(),
+                Self::Customer => "customer".to_string(),
+                Self::Store => "store".to_string(),
+                Self::Producer => "producer".to_string(),
+                Self::Consumer => "consumer".to_string(),
+            }
+        )
     }
 }
 

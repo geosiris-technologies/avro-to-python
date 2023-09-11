@@ -1,28 +1,27 @@
 {%- block enum %}
-use std::fmt;
 
-#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum {{file.name}}{   
+{{ macros.derive(None, true) }}
+pub enum {{file.name}}{
+/* {{file.default}} */
 {%- block enumStruct %}
-{%- if file.default %}
-    // the first value ({{file.default}}) is the default
-    {{file.default}} {# = String::from(r#"{{file.default}}"#) #}
-{% endif -%}
-{%- for symbol in file.symbols -%}
-{%- if symbol != file.default %}
-    {#  #}
-    {%- if symbol|snake_case|is_reserved -%}
-    {{symbol|snake_case ~ '_ '}}
+{%- if not file.default %}
+    {#- #[default] -#}
+{%- endif -%}
+{%- for symbol in file.symbols %}
+    {#  -#}
+    {%- if symbol == file.default -%}
+    {#- #[default] -#}
+    {% endif -%}
+    {%- if symbol|pascal_case|is_reserved -%}
+    {{symbol|pascal_case ~ '_ '}}
     {%- else -%}
-    {{symbol|snake_case}}
+    {{symbol|pascal_case}}
     {%- endif -%}
     {%- if file.name == "Protocol" -%}
         ={{loop.index0}}
     {%- endif -%}
     ,
-{%- endif -%}
-{% endfor %}
+{%- endfor %}
 {% endblock -%}
 }
 
@@ -35,16 +34,34 @@ impl fmt::Display for {{file.name}}{
             {%- for symbol in  file.symbols -%}
                 {%- if symbol != file.default %}
                 {#  #}
-                {%- if symbol|snake_case|is_reserved -%}
-                {{file.name}}::{{symbol|snake_case ~ '_ '}}
+                {%- if symbol|pascal_case|is_reserved -%}
+                {{file.name}}::{{symbol|pascal_case ~ '_ '}}
                 {%- else -%}
-                {{file.name}}::{{symbol|snake_case ~ ' '}}
+                {{file.name}}::{{symbol|pascal_case ~ ' '}}
                 {%- endif -%}
                 => "{{symbol}}",
                 {%- endif -%}
             {% endfor %}
             }
         )
+    }
+}
+
+impl {{file.name}}{
+    pub fn iter() -> Iter<'static, {{file.name}}> {
+        static VEC_ENUM: [{{file.name}}; {{file.symbols | length}}] = [
+        {%- for symbol in  file.symbols -%}
+            {%- if symbol != file.default %}
+            {#  #}
+            {%- if symbol|pascal_case|is_reserved -%}
+            {{file.name}}::{{symbol|pascal_case ~ '_ '}}
+            {%- else -%}
+            {{file.name}}::{{symbol|pascal_case ~ ' '}}
+            {%- endif -%}, {#  -#}
+            {%- endif -%}
+        {% endfor -%}
+        ];
+        VEC_ENUM.iter()
     }
 }
 {% endblock -%}

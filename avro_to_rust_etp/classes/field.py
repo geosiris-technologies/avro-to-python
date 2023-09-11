@@ -79,7 +79,8 @@ class EnumField(Field):
 
     def to_dict(self, already_added) -> Dict:
         return { "type": "enum",
-                    "name": self.enum_type.name
+                    "name": self.enum_type.name,
+                    "default": self.default
                     # "symbols" : self.symbols
                 }
 

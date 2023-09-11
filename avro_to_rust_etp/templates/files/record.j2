@@ -1,6 +1,6 @@
-{%- block record -%}
+{%- block record scoped %}
 
-{% set ns = namespace(optional=false) %}
+{%- set ns = namespace(optional=false) %}
 
 {%- for name, field in file.fields.items() -%}
     {%- if field.fieldtype == 'array'-%}
@@ -9,15 +9,14 @@
         {%- endif -%}
     {%- elif field.fieldtype == 'union' -%}
         {%- if field.union_types|length > 1  -%}
-#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "camelCase")]
+
+{{ macros.derive(None, true) }}
 pub enum {{get_union_types_enum_name(get_union_types(field, True, None))}}  {
-    {# #}
-            {%- for u_type in get_union_types(field, True, None).split(',') -%}
+    {# -#}
+    {%- for u_type in get_union_types(field, True, None).split(',') -%}
     {{ u_type | pascal_case }}({{primitive_type_map.get(u_type, u_type)}}),
-    {# #}
-            {%- endfor -%}
-{# #}
+    {#  -#}
+    {%- endfor %}
 }
 {# #}
         {%- endif -%}
@@ -25,14 +24,11 @@ pub enum {{get_union_types_enum_name(get_union_types(field, True, None))}}  {
 {%- endfor -%}
 
 {# #}
-#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize, Derivative)]
-#[serde(rename_all = "camelCase")]
+{{ macros.derive(file.fields, false) }}
 pub struct {{file.name}}{
 {%- for name, field in file.fields.items() -%}
     {%- include 'fields/fieldFactory.j2' -%}
 {%- endfor -%}
-{% if file.name == 'AnyArray' %}
-{% endif %}
 }
 
 pub static AVRO_SCHEMA: &'static str = {% include 'partials/avroSchema.j2' %};
@@ -90,27 +86,20 @@ impl ETPMetadata for {{file.name}}{
 }
 {%- endblock a %}
 {%- endif -%}
-{%- endblock %}
+{%- endblock record %}
 
-{%- set nb_param = namespace(value=0) %}
-{%- for name, field in file.fields.items() -%}
-    {%- if macros.attrib_is_param(field) == "true" -%}
-        {%- set nb_param.value = nb_param.value + 1 -%}
-    {%- endif -%}
-{%- endfor %}
-
+{%- set nb_param = macros.count_attrib_is_param(file.fields) | int -%}
 
 {#- Generate default contructor with default value only if there are some default value for at least 1 param -#}
 
+{%- if file.fields|length > nb_param %}
 
-{%- if file.fields|length > nb_param.value %}
-
-impl{% if nb_param.value == 0 %} Default for
+impl{% if nb_param == 0 %} Default for
 {%- endif %} {{ file.name}} {#- {{ macros.compute_ns_type_name(file.namespace, file.name) }} -#} {
 
 {%- block default_impl scoped %}
     /* Protocol {{file.schema.protocol}}, MessageType : {{file.schema.messageType}} */
-    {% if nb_param.value > 0 -%}
+    {% if nb_param > 0 -%}
     pub fn default_with_params
     {%- else -%}
     fn default

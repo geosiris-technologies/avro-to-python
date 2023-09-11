@@ -3,9 +3,11 @@
 {%- if macros.isEtpMessage() == "true" -%}
 use avro_rs::{Schema, Error};
 use crate::helpers::ETPMetadata;
-{% endif %}
+{% endif -%}
 
-{%- if file.avrotype == 'enum' %}
+{%- if file.avrotype == 'enum' -%}
+use std::fmt;
+use std::slice::Iter;
 {# {%- elif file.avrotype == 'fixed' %} #}
 {# from {{pip_import}}.helpers import Fixed #}
 {%- elif file.avrotype == 'record' %}

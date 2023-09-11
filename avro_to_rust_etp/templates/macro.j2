@@ -12,6 +12,16 @@
     {%- endif -%}
 {%- endmacro -%}
 {#- =================== -#}
+{%- macro count_attrib_is_param(fields) -%}
+        {%- set nb_param = namespace(value=0) %}
+        {%- for name, field in fields.items() -%}
+            {%- if attrib_is_param(field) == "true" -%}
+                {%- set nb_param.value = nb_param.value + 1 -%}
+            {%- endif -%}
+        {%- endfor %}
+        {{ nb_param.value }}
+{%- endmacro -%}
+{#- =================== -#}
 {%- macro isEtpMessage() -%}
 {%- if ("protocol" in file.schema
         or "messageType" in file.schema
@@ -105,6 +115,10 @@ _{{ name | snake_case }}
 {%- endif -%}
 {%- endmacro -%}
 
+{%- macro get_protocol_name(file) -%}
+        {{ file.namespace.split(".") | last }}
+{%- endmacro -%}
+
 {#- =================== -#}
 {%- macro compute_ns_type_name(ns, name) -%}
 crate::{{ns|lower_and_snake_module}}
@@ -119,7 +133,6 @@ crate::{{ns|lower_and_snake_module}}
         ::{{name|snake_case_module}}
         {%- endif -%}
 {%- endmacro -%}
-
 {#- =================== -#}
 {%- macro attrib_is_param(field) -%}
 {%- if (field.fieldtype == 'reference' and not field.reference_name.endswith("Uuid"))
@@ -134,4 +147,24 @@ crate::{{ns|lower_and_snake_module}}
         {%- else -%}
         false
         {%- endif -%}
+{%- endmacro -%}
+
+{#- =================== -#}
+
+{%- macro derive(recordFields, isEnum) -%}
+
+{%- if isEnum -%}
+#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "PascalCase")]
+{%- else -%}
+{%- set nb_attrib_param = count_attrib_is_param(recordFields) | int -%}
+#[derive(Debug, PartialEq, Clone, serde::Deserialize, serde::Serialize, Derivative, {#  -#}
+{# {%- if recordFields | length <= nb_attrib_param  -%} #}
+{%- if nb_attrib_param >0  -%}
+{#- Default, -#}
+{%- endif -%}
+)]
+#[serde(rename_all = "PascalCase")]
+{%- endif -%}
+
 {%- endmacro -%}

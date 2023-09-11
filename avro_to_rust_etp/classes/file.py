@@ -18,6 +18,7 @@ class File(object):
     imports: List[Reference] = field(default_factory=list)
     fields: Mapping[str, Field] = field(default_factory=list)
     enum_sumbols: List[str] = field(default_factory=list)
+    default: str = None
     #meta_fields: List[object] = field(default_factory=list)
 
     def __eq__(self, other: Union['File', str]):

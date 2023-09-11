@@ -119,6 +119,10 @@ class Protocol:
         return avro.schema.Name(self.name, self.namespace, None).fullname
 
     @property
+    def default(self):
+        return self.get_prop('default')
+
+    @property
     def types(self):
         return self.get_prop('types')
 
@@ -149,6 +153,8 @@ class Protocol:
         to_dump = {}
         to_dump['protocol'] = self.name
         names = avro.schema.Names(default_namespace=self.namespace)
+        if self.default:
+            to_dump['default'] = self.default
         if self.namespace:
             to_dump['namespace'] = self.namespace
         if self.types:
