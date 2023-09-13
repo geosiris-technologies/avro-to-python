@@ -1,3 +1,6 @@
 {%- if field.fieldtype == 'reference' -%}
 {{field.reference_name}}
+{%- if field.reference_name != 'Uuid' and field.reference_name not in enum_types -%}
+{#- <'a> -#}
+{%- endif -%}
 {%- endif -%}

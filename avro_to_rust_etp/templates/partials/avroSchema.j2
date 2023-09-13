@@ -7,5 +7,6 @@
 {%- block schema -%} -#}
 {#- 	{{get_json_schema(file.expanded_schema)}} -#}
 {#- {%- endblock -%} -#}
-r#"{{json.dumps(file.expanded_schema)}}"#
+r#"{{json.dumps(file.expanded_schema, indent=4)}}"#
+{#- r#"{{json.dumps(file.schema, indent=4)}}"# -#}
 {#-  -#}

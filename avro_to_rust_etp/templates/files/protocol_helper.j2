@@ -2,8 +2,8 @@
 #![allow(dead_code)]
 {% include 'partials/header.j2' %}
 
-
-enum ProtocolMessage{
+{{ macros.derive(None, true) }}
+pub enum ProtocolMessage{
 {% for file in protocols -%}
 {#-  #}	{{ macros.get_protocol_name(file) }}_{{ file.name }}({{ macros.compute_ns_type_name(file.namespace, file.name) }}),
 {% endfor -%}

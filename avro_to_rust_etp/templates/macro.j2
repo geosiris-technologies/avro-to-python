@@ -22,7 +22,7 @@
         {{ nb_param.value }}
 {%- endmacro -%}
 {#- =================== -#}
-{%- macro isEtpMessage() -%}
+{%- macro isEtpMessage(file) -%}
 {%- if ("protocol" in file.schema
         or "messageType" in file.schema
         or "senderRole" in file.schema
@@ -88,7 +88,8 @@ _{{ name | snake_case }}
 
         {%- if field.fieldtype == 'reference' -%}
                 {%- if field.reference_name.endswith("Uuid") -%}
-                        Uuid::new_v4()
+                        {#- Uuid::new_v4() -#}
+                        random_uuid()
                 {%- else -%}
                         {#- default function parameter -#}
                         {{ compute_field_name_as_param(field.name) }}

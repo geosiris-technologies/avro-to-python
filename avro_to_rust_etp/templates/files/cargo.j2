@@ -16,9 +16,10 @@ readme = "README.md"
 repository = "https://github.com/geosiris-technologies/etptypes-rs"
 
 [dependencies]
-avro-rs = "0.13.0"
+serde_bytes = { git = "https://github.com/markfarnan/bytes", branch = "etp-working" }
+apache-avro = { git = "https://github.com/markfarnan/avro", branch = "etp-working" }
 bytes = "1.4.0"
 derivative = "2.2.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0.151", features = ["derive"] }
 serde_json = "1.0.105"
 uuid = { version = "1.4.1", features = ["v4", "serde"]}

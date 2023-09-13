@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: 2023 Geosiris
 // SPDX-License-Identifier: Apache-2.0 OR MIT
-use avro_rs::{Codec, Schema, Writer};
+use apache_avro::{Schema, AvroResult, to_avro_datum, to_value};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::fmt;
+use std::io::Read;
 
 use crate::energistics::etp::v12::datatypes::version::Version;
 
@@ -57,8 +58,12 @@ pub const ETP11VERSION: Version = Version {
     patch: 0,
 };
 
-pub trait ETPMetadata {
+pub trait Schemable{
     fn avro_schema() -> Option<Schema>;
+    fn avro_schema_str() -> &'static str;
+}
+
+pub trait ETPMetadata: Schemable {
 
     fn protocol(&self) -> i32;
     fn message_type(&self) -> i32;
@@ -66,48 +71,12 @@ pub trait ETPMetadata {
     fn protocol_roles(&self) -> Vec<Role>;
     fn multipart_flag(&self) -> bool;
 
-    fn avro_serialize(&self) -> Option<Vec<u8>> where Self: serde::Serialize{
-        if let Some(schema) = Self::avro_schema(){
-            let mut writer = Writer::with_codec(&schema, Vec::new(), Codec::Deflate);
-            let _ = writer.append_ser(self);
-            Some(writer.into_inner().unwrap())
-        }else{
-            None
-        }
+    /* AVRO */
+    fn avro_serialize(&self) -> AvroResult<Vec<u8>> 
+        where Self: serde::Serialize
+    {
+        let hdr_value = to_value(self).unwrap();
+        return to_avro_datum(&Self::avro_schema().unwrap(), hdr_value);
     }
-
-    /*fn avro_deserialize<'de>(input: &Vec<u8>) -> Result<Self, Error> where Self: serde::Deserialize<'de> {
-        let schema = Self::avro_schema()?;
-        if let Some(result) = Reader::with_schema(&schema, &input[..])?.next(){
-            /*match &result.next(){
-                None => panic!("{:?}", "nothing to Deserialize")
-                Some(x) => from_value::<Self>(&x.unwrap())
-            }*/
-            let value = result.unwrap();
-            Ok(from_value::<Self>(&value).unwrap())
-        }else{
-            Err(None)
-
-        }
-        
-    }
-    fn avro_deserialize<'de>(input: &Vec<u8>) -> AvroResult<Self> where Self: serde::Deserialize<'de> {
-        match Self::avro_schema(){
-            Some(schema) => {
-                let mut reader = Reader::with_schema(&schema, &input[..]).unwrap();
-                let value = reader.next().unwrap();
-                let val = value.unwrap();
-                from_value(&val)
-                /*match from_value::<'de ,Self>(&val){
-                    Ok(result) => Some(result),
-                    Err(_) => None
-                }*/
-            },
-            None => None
-        }
-    }
-*/
-    /*fn avro_deserialize<'de>(input: &Vec<u8>) -> AvroResult<Self> where Self: serde::Deserialize<'de> {
-        from_value::<'de ,Self>(&Reader::with_schema(&Self::avro_schema().unwrap(), &input[..]).unwrap().iter().collect().as_slice().unwrap()?.unwrap())
-    }*/
+    fn avro_deserialize<R: Read>(input: &mut R) -> AvroResult<Self> where Self: Sized; 
 }

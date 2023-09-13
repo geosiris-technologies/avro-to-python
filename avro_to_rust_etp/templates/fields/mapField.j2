@@ -1,6 +1,6 @@
 {%- if field.fieldtype == 'map' -%}
 {%- block map -%}
-    HashMap<String, {% set field = field.map_type -%}
+    HashMap<{{ primitive_type_map["string"] }}, {% set field = field.map_type -%}
 {%- if field.fieldtype == 'reference' -%}
 {%- include 'fields/referenceField.j2' -%},
 {%- elif field.fieldtype == 'primitive' -%}

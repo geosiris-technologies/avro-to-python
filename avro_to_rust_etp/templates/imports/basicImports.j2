@@ -1,9 +1,13 @@
 {%- block basicimports %}
+use apache_avro::{Schema, Error};
 
-{%- if macros.isEtpMessage() == "true" -%}
-use avro_rs::{Schema, Error};
+{%- if macros.isEtpMessage(file) == "true" %}
+use apache_avro::{AvroResult, from_value, from_avro_datum};
+use std::io::Read;
+
 use crate::helpers::ETPMetadata;
 {% endif -%}
+use crate::helpers::Schemable;
 
 {%- if file.avrotype == 'enum' -%}
 use std::fmt;

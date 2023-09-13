@@ -171,4 +171,5 @@ Usage
 
 .. code-block:: bash
     poetry run avpr-to-avsc .\rc\etp.avpr
-    poetry run avro-to-rust-etp output ../etptypes-rs --pip etptypes --package_version 1.0.0+1.2 > log.log
+    poetry run avro-to-rust-etp output gen --pip etptypes --package_version 1.0.0+1.2 > log.log
+    poetry run avro-to-rust-etp output gen --pip etpproto-out --only_out

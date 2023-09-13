@@ -111,6 +111,18 @@ class AvroWriter(object):
             })
         self.template = self.template_env.get_template('baseTemplate.j2')
 
+
+        self.enum_types = []
+        for node in LevelOrderIter(self.tree):
+            for c in node.children:
+                if c.is_leaf:
+                    f = c.file
+                    if f.schema is not None and f.schema['type'] == "enum":
+                        self.enum_types.append(f.name)
+        print(">$>", self.enum_types)
+
+
+
     def lower_and_snake(self, value: str, **kwargs: Any) -> str:
         split = value.split('.')
         return "%s" % '.'.join([self.snake_case(str(x)) for x in split])
@@ -267,7 +279,7 @@ class AvroWriter(object):
                     if f.schema is not None:
                         all_types.append(f)
                     if "protocol" in f.schema:
-                        print(f)
+                        print("P)\t", f)
                         protocols.append(f)
 
         protocols.sort(key=lambda r : (int(r.schema["protocol"]), int(r.schema["messageType"])))
@@ -372,6 +384,7 @@ class AvroWriter(object):
             get_union_types_enum_name=get_union_types_enum_name,
             pascal_case=lambda w: self.pascal_case(w),
             json=json,
+            enum_types=self.enum_types,
             pip_import=self.pip_import,
             enumerate=enumerate
         )
@@ -396,7 +409,80 @@ class AvroWriter(object):
                         c.file.name
                     )
 
+    #    ____        __                      __
+    #   / __ \__  __/ /_   ____  ____ ______/ /_
+    #  / / / / / / / __/  / __ \/ __ `/ ___/ __/
+    # / /_/ / /_/ / /_   / /_/ / /_/ / /  / /_
+    # \____/\__,_/\__/  / .___/\__,_/_/   \__/
+    #                  /_/ 
 
+    def write_out(self, root_dir: str) -> None:
+        self.root_dir = get_system_path(root_dir)
+        if self.pip:
+            self.pip_import = self.pip.replace('-', '_')
+            self.pip_dir = self.root_dir + '/' + self.pip
+            self.root_dir += '/' + self.pip + '/src'  # + self.pip.replace('-', '_')
+            self.pip = self.pip.replace('-', '_')
+        else:
+            self.pip_import = ''
+
+        get_or_create_path(self.root_dir)
+
+        self.out_handler()
+
+    def out_handler(self,):
+        filepath = self.pip_dir + '/handlers.rs'
+        template = self.template_env.get_template('out/handlers.j2')
+
+        # Search protocol :
+        protocols = []
+        all_types = []
+        for node in LevelOrderIter(self.tree, filter_=lambda n: not n.is_leaf):
+            imports = set()
+            path = [str(n.name) for n in node.path]
+            namespace = "%s" % '.'.join([self.snake_case(str(x)) for x in path])
+            
+            for c in node.children:
+                if c.is_leaf:
+                    f = c.file
+                    if f.schema is not None:
+                        all_types.append(f)
+                    if "protocol" in f.schema:
+                        print(f)
+                        protocols.append(f)
+
+        protocols.sort(key=lambda r : (int(r.schema["protocol"]), int(r.schema["messageType"])))
+        protocols_map = groupby(protocols, lambda r : int(r.schema["protocol"]))
+
+        print(protocols_map)
+
+        filetext = template.render(
+            protocols=protocols_map,
+            all_types=list(set(map(lambda x : json.dumps(x.schema), all_types))),
+            primitive_type_map=PRIMITIVE_TYPE_MAP,
+            get_union_types=get_union_types,
+            get_union_types_enum_name=get_union_types_enum_name,
+            pascal_case=lambda w: self.pascal_case(w),
+            rgx_sub=rgx_sub,
+            json=json,
+            pip_import=self.pip_import,
+            enumerate=enumerate,
+        )
+        with open(filepath, 'w') as f:
+            f.write(RUST_FILE_LICENSE)
+            f.write(filetext)
+
+
+def groupby(lst: list, f):
+    res = {}
+
+    for v in lst:
+        k = f(v)
+        if k not in res:
+            res[k] = []
+        res[k].append(v)
+
+    return res
 
 # DONE : faire un trait pour les messages "protocol": "0", "messageType": "2", "senderRole": "server", "protocolRoles": "client, server", "multipartFlag"
 # DONE : pub static AVRO_SCHEMA: &'static str = 

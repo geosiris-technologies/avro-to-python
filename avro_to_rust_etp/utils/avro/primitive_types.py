@@ -21,4 +21,5 @@ PRIMITIVE_TYPE_MAP = {
     # 'bytes': 'bytes::Bytes',
     'bytes': 'Vec<u8>',
     'string': 'String'
+    # 'string': "&'a str"
 }

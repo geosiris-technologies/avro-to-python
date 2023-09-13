@@ -1,12 +1,11 @@
 {% block fileimports -%}
 {%- if file.imports -%}
-{% for imp in file.imports -%}    
-	{#- {%- if imp.name == "Uuid" -%}
-		use uuid::{uuid, Uuid};
+{% for imp in file.imports %}    
+	{%- if imp.name == "Uuid" -%}
+		use crate::{{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{% raw %}{{% endraw %}{{imp.name}}, random_uuid{% raw %}}{% endraw %};
 	{%- else -%}
 		use crate::{{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{{imp.name}};
-	{%- endif %} -#}
-	use crate::{{imp.namespace|lower_and_snake_module}}::{{imp.name|snake_case_module}}::{{imp.name}};
+	{%- endif %}
 {% endfor -%}
 {%- endif -%}
 {% endblock %}

@@ -1,6 +1,6 @@
 {%- if field.fieldtype == 'array' -%}
 {%- if field.array_item_type.fieldtype == 'reference' -%}
-Vec<{{field.array_item_type.reference_name}}>
+Vec<{{field.array_item_type.reference_name}}{# <'a> #}>
 {#- {%- elif file.name.startswith('ArrayOf') and field.array_item_type.fieldtype == 'primitive' -%}
 Vec<{{primitive_type_map[field.array_item_type.avrotype]}}> #}
 {%- elif field.array_item_type.fieldtype == 'primitive' -%}
