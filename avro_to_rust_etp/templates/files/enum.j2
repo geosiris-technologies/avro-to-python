@@ -47,6 +47,23 @@ impl fmt::Display for {{file.name}}{
     }
 }
 
+impl FromStr for {{file.name}} {
+    type Err = ();
+    fn from_str(input: &str) ->  Result<{{file.name}}, Self::Err> {
+        match input {
+        {%- for symbol in  file.symbols %}
+            "{{symbol}}" => {#  -#}Ok(
+            {%- if symbol|pascal_case|is_reserved -%}
+            {{file.name}}::{{symbol|pascal_case ~ '_'}}
+            {%- else -%}
+            {{file.name}}::{{symbol|pascal_case}}
+            {%- endif -%}),
+        {%- endfor %}
+            _ => Err(()),
+        }
+    }
+}
+
 impl {{file.name}}{
     pub fn iter() -> Iter<'static, {{file.name}}> {
         static VEC_ENUM: [{{file.name}}; {{file.symbols | length}}] = [

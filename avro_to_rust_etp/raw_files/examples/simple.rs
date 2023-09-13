@@ -15,14 +15,6 @@ use etptypes::helpers::*;
 use etptypes::error::*;
 
 
-fn test_trait<T: ETPMetadata>(obj: &T) {
-    println!(
-        "Protocol {:?}; Messagetype {:?}",
-        obj.protocol(),
-        obj.message_type()
-    );
-}
-
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 

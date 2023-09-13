@@ -1,10 +1,10 @@
 {%- block basicimports %}
 use apache_avro::{Schema, Error};
 
-{%- if macros.isEtpMessage(file) == "true" %}
 use apache_avro::{AvroResult, from_value, from_avro_datum};
 use std::io::Read;
 
+{%- if macros.isEtpMessage(file) == "true" %}
 use crate::helpers::ETPMetadata;
 {% endif -%}
 use crate::helpers::Schemable;
@@ -12,6 +12,7 @@ use crate::helpers::Schemable;
 {%- if file.avrotype == 'enum' -%}
 use std::fmt;
 use std::slice::Iter;
+use std::str::FromStr;
 {# {%- elif file.avrotype == 'fixed' %} #}
 {# from {{pip_import}}.helpers import Fixed #}
 {%- elif file.avrotype == 'record' %}

@@ -44,6 +44,11 @@ impl Schemable for {{file.name}}{# <'_> #}{
     fn avro_schema_str() ->  &'static str{
         AVRO_SCHEMA
     }
+
+    fn avro_deserialize<R: Read>(input: &mut R) -> AvroResult<{{file.name}}> {
+        let record = from_avro_datum(&{{file.name}}::avro_schema().unwrap(), input, None).unwrap();
+        from_value::<{{file.name}}>(&record)
+    }
 }
 
 {%- if macros.isEtpMessage(file) == "true" %}
@@ -88,11 +93,6 @@ impl ETPMetadata for {{file.name}}{# <'_> #}{
     }
 {%- endif %}
 {%- endfor %}
-
-    fn avro_deserialize<R: Read>(input: &mut R) -> AvroResult<{{file.name}}> {
-        let record = from_avro_datum(&{{file.name}}::avro_schema().unwrap(), input, None).unwrap();
-        from_value::<{{file.name}}>(&record)
-    }
 }
 {%- endblock a %}
 {%- endif -%}
