@@ -6,6 +6,7 @@ use std::io::Read;
 
 {%- if macros.isEtpMessage(file) == "true" %}
 use crate::helpers::ETPMetadata;
+use crate::protocols::ProtocolMessage;
 {% endif -%}
 use crate::helpers::Schemable;
 

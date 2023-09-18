@@ -97,4 +97,6 @@ fn main() {
     let mut record_slice = record.as_slice();
     println!("{:?}", record_slice);
     println!("{:?}", RequestSession::avro_deserialize(&mut record_slice));
+    println!("{:?}", rq.as_protocol_message().avro_schema());
+    println!("{:?}", rq.as_protocol_message().avro_serialize());
 }

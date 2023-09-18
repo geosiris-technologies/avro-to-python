@@ -1,10 +1,40 @@
 {%- import 'macro.j2' as macros with context -%}
 #![allow(dead_code)]
-{% include 'partials/header.j2' %}
 
+{% include 'partials/header.j2' %}
+use std::io::Read;
+use crate::energistics::etp::v12::datatypes::message_header::MessageHeader;
+use apache_avro::{Schema, AvroResult};
+use enum_dispatch::enum_dispatch;
+
+#[enum_dispatch]
 {{ macros.derive(None, true) }}
 pub enum ProtocolMessage{
 {% for file in protocols -%}
-{#-  #}	{{ macros.get_protocol_name(file) }}_{{ file.name }}({{ macros.compute_ns_type_name(file.namespace, file.name) }}),
+{#-  #}	{{ macros.compute_protocolMessageName(file) }}({{ macros.compute_ns_type_name(file.namespace, file.name) }}),
 {% endfor -%}
 }
+
+
+pub fn avro_decode<R: Read>(mh: &MessageHeader, encoded_msg: &mut R) -> Option<ProtocolMessage>{
+    return match(mh.protocol, mh.message_type){
+		{%- for file in protocols -%}
+        ({{file.schema.protocol}}, {{file.schema.messageType}}) => Some(ProtocolMessage::{{ macros.compute_protocolMessageName(file) }}({{ macros.compute_ns_type_name(file.namespace, file.name) }}::avro_deserialize(encoded_msg).unwrap())),
+        {% endfor -%}
+        _ => None
+    }
+}
+
+trait ProtocolMessageConverter{
+    fn as_protocol_message<T>(_value: T) -> ProtocolMessage;
+}
+
+
+{# pub fn get_protocol_message<T>(value: T) -> Option<ProtocolMessage>{
+    match value{
+        {%- for file in protocols -%}
+        {{ macros.compute_ns_type_name(file.namespace, file.name) }}(_) => Some(ProtocolMessage::{{ macros.compute_protocolMessageName(file) }}(value)),
+        {% endfor %}
+        _ => None
+    }
+} #}

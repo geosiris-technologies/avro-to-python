@@ -49,6 +49,11 @@
 _{{ name | snake_case }}
 {%- endmacro -%}
 
+
+{%- macro compute_protocolMessageName(file) -%}
+{{ get_protocol_name(file) }}_{{ file.name }}
+{%- endmacro -%}
+
 {#- =================== -#}
 {%- macro compute_default(field) -%}
 {%- if field.default is not none -%}

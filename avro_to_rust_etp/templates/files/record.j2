@@ -31,22 +31,29 @@ pub struct {{file.name}}{# <'a> #}{
 {%- endfor %}
 }
 
-
-impl Schemable for {{file.name}}{# <'_> #}{
-    fn avro_schema() -> Option<Schema>{
-        match Schema::parse_str(AVRO_SCHEMA) {
-            Ok(result) => Some(result),
-            Err(e) => {
-                panic!("{:?}", e);
-            }
+fn {{file.name|lower}}_avro_schema() -> Option<Schema>{
+    match Schema::parse_str(AVRO_SCHEMA) {
+        Ok(result) => Some(result),
+        Err(e) => {
+            panic!("{:?}", e);
         }
     }
-    fn avro_schema_str() ->  &'static str{
+}
+
+impl Schemable for {{file.name}} {
+    fn avro_schema(&self) -> Option<Schema>{
+        {{file.name|lower}}_avro_schema()
+    }
+    fn avro_schema_str(&self) ->  &'static str{
         AVRO_SCHEMA
     }
+}
 
+impl AvroSerializable for {{file.name}}{}
+
+impl AvroDeserializable for {{file.name}}{
     fn avro_deserialize<R: Read>(input: &mut R) -> AvroResult<{{file.name}}> {
-        let record = from_avro_datum(&{{file.name}}::avro_schema().unwrap(), input, None).unwrap();
+        let record = from_avro_datum(&{{file.name|lower}}_avro_schema().unwrap(), input, None).unwrap();
         from_value::<{{file.name}}>(&record)
     }
 }
@@ -95,6 +102,14 @@ impl ETPMetadata for {{file.name}}{# <'_> #}{
 {%- endfor %}
 }
 {%- endblock a %}
+
+
+impl{% if nb_param == 0 %} Default for {%- endif %} {{ file.name}}{
+    pub fn as_protocol_message(&self) -> ProtocolMessage{
+        ProtocolMessage::{{ macros.compute_protocolMessageName(file) }}(self.clone())
+    } 
+}
+
 {%- endif -%}
 {%- endblock record %}
 
