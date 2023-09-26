@@ -90,8 +90,9 @@ _{{ name | snake_case }}
         {%- endif -%}
 
 {%- else -%} {#-        No default found        -#}
-
-        {%- if field.fieldtype == 'reference' -%}
+        {%- if field.optional -%}
+                None
+        {%- elif field.fieldtype == 'reference' -%}
                 {%- if field.reference_name.endswith("Uuid") -%}
                         {#- Uuid::new_v4() -#}
                         random_uuid()
@@ -141,13 +142,15 @@ crate::{{ns|lower_and_snake_module}}
 {%- endmacro -%}
 {#- =================== -#}
 {%- macro attrib_is_param(field) -%}
-{%- if (field.fieldtype == 'reference' and not field.reference_name.endswith("Uuid"))
-                or (field.fieldtype == 'primitive' 
-                        and not (field.avrotype == "string" or field.avrotype == 'boolean'
-                                                or (field.avrotype == "long" and (field.name.endswith("_time") or field.name.endswith("Time")))
-                                        )
+{%- if not field.optional and (
+        field.name.endswith("uri")
+        or (field.fieldtype == 'reference' and (not field.reference_name.endswith("Uuid") or field.name.endswith("uri")) )
+        or (field.fieldtype == 'primitive' 
+                and not ((field.avrotype == "string") or field.avrotype == 'boolean'
+                        or (field.avrotype == "long" and (field.name.endswith("_time") or field.name.endswith("Time"))) 
                         )
-                or field.fieldtype == 'union'
+        )
+        or field.fieldtype == 'union')
          -%}
         true
         {%- else -%}

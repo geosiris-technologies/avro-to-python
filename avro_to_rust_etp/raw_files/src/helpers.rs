@@ -80,7 +80,7 @@ pub trait AvroDeserializable {
 }
 
 #[enum_dispatch(ProtocolMessage)]
-pub trait ETPMetadata: Schemable + AvroSerializable {
+pub trait ETPMetadata: AvroSerializable {
 
     fn protocol(&self) -> i32;
     fn message_type(&self) -> i32;

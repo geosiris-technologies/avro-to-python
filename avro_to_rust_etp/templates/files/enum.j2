@@ -8,6 +8,7 @@ pub enum {{file.name}}{
     {#- #[default] -#}
 {%- endif -%}
 {%- for symbol in file.symbols %}
+    #[serde(rename(serialize = "{{symbol}}", deserialize = "{{symbol}}"))]
     {#  -#}
     {%- if symbol == file.default -%}
     {#- #[default] -#}
