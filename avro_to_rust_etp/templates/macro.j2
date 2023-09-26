@@ -142,7 +142,8 @@ crate::{{ns|lower_and_snake_module}}
 {%- endmacro -%}
 {#- =================== -#}
 {%- macro attrib_is_param(field) -%}
-{%- if not field.optional and (
+{#- not field.optional and -#}
+{%- if  (
         field.name.endswith("uri")
         or (field.fieldtype == 'reference' and (not field.reference_name.endswith("Uuid") or field.name.endswith("uri")) )
         or (field.fieldtype == 'primitive' 
