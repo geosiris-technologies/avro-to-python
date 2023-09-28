@@ -17,9 +17,11 @@
     {#- #[derivative(Default(value = "{{field.default}}" ))] -#}
 {%- endif -%}
 {%- endmacro -%}
-{#-  -#}
-{#-  -#}
-{#-  -#}
+{#-  
+
+
+
+-#}
 {%- macro compute_field_name(name) -%}
 {%- if name|snake_case|is_reserved -%}
   pub {{name|snake_case ~ '_ '}}
@@ -27,12 +29,22 @@
   pub {{name|snake_case}}
 {%- endif -%}
 {% endmacro -%}
-{#-  -#}
-{#-  -#}
-{#-  -#}
-{# {%- if field.reference_name == 'Uuid' -%}  #[serde(with = "serde_bytes")]  {% endif -%} #}
+{#- 
+
+-#}
+{%- macro is_uuid_field(field) -%}
+{%- if (field.fieldtype == 'union' and get_union_types_enum_name(get_union_types(field, True, None)) == 'Uuid') or (field.fieldtype == 'reference' and field.reference_name == "Uuid") -%}
+  true
+{%- else -%}
+  false
+{%- endif -%}
+{% endmacro -%}
+{#-  
+
+
+-#}
 {% block field_factory %}
-  {%- if field.fieldtype == 'reference' and field.reference_name == "Uuid" %}
+  {%- if is_uuid_field(field) == "true" or field.avrotype == "bytes" %}
     #[serde(with = "serde_bytes")]
   {%- endif %}
 	#[serde(rename = "{{name}}")]
