@@ -1,0 +1,45 @@
+{%- macro gen_array_union_validators() -%}
+    {%- for name, field in file.fields.items() -%}
+        {%- if field.union_types|length > 1 -%}
+            {%- if "ArrayOf" in get_union_types(field, True) -%}
+                {{ gen_array_union_validators_f_dict(name, get_union_types(field, True).split(',')) }}
+                {{ gen_array_union_validators_f_validator(name, get_union_types(field, True).split(',')) }}
+            {%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
+{%- endmacro -%}
+
+
+{%- macro gen_array_union_validators_f_dict(attrib_name, union_type_list) -%}
+    {% set ns = namespace(count=0) %}
+    def dict(self, *args, **kwargs) -> dict[str, object]:
+    {%- for type_name in union_type_list -%}
+        {% if "ArrayOf" in type_name -%}
+        {#-  #}
+        {% if ns.count > 0 -%}el{%- endif -%}
+        if isinstance(self.{{attrib_name}}, {{type_name}}):
+            return {"{{attrib_name}}": ("Energistics.Etp.v12.Datatypes.{{type_name}}",{'values': self.{{attrib_name}}.values})}
+            {%-  set ns.count = ns.count + 1 -%}
+        {%- endif -%}
+    {%- endfor %}
+        else:
+            return super().dict(*args, **kwargs)
+{%- endmacro -%}
+
+{%- macro gen_array_union_validators_f_validator(attrib_name, union_type_list) -%}
+    {% set ns = namespace(count=0) %}
+    @validator('{{attrib_name}}', pre=True, always=True)
+    def validate_item_type(cls, v):
+        if isinstance(v, (tuple, list)):
+        {%- for type_name in union_type_list -%}
+            {%- if "ArrayOf" in type_name -%}
+            {#-  #}
+            {% if ns.count > 0 -%}el{%- endif -%}
+            if v[0].endswith("{{type_name}}"):
+                return {{type_name}}.construct(values=v[1]["values"])
+            {%-  set ns.count = ns.count + 1 -%}
+            {%-  set ns.count = ns.count + 1 -%}
+            {%- endif -%}
+        {%- endfor %}
+        return v
+{%- endmacro -%}

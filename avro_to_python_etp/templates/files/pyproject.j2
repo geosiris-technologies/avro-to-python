@@ -11,3 +11,45 @@ authors = [
 python = "^3.8"
 pydantic = "~1"
 typingx = "^0.6.0"
+fastavro = "^1.9.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+flake8 = "^4.0.0"
+black = "^22.3.0"
+pytest-cov = "^3.0.0"
+pytest-asyncio = "^0.18.0"
+
+[tool.black]
+line-length = 79
+target-version = ["py39"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | htmlcov
+)/
+'''
+
+[tool.pytest.ini_options]
+addopts = ""
+console_output_style = "count"
+python_classes = "Test"
+python_files = "test_*.py"
+python_functions = "test*"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+
+[tool.coverage.run]
+branch = true
+source = ["etptypes"]

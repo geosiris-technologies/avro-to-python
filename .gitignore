@@ -124,3 +124,5 @@ ENV/
 rc/
 output/
 tmp/
+gen/
+manip.txt
