@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "avro-to-python-etp"
-version = "1.0.3"
+version = "1.0.4"
 authors = [
   "Scott Rothbarth <srserves85@gmail.com>",
   "Lionel Untereiner <lionel.untereiner@geosiris.com>",
